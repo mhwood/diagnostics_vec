@@ -12,7 +12,7 @@ C Place CPP define/undef flag here
 C to reduce memory storage, disable unused array with those CPP flags :
 #define DIAGNOSTICS_OB_3D_STATE
 #define DIAGNOSTICS_OB_2D_STATE
-#define DIAGNOSTICS_SURF_STATE
+#define DIAGNOSTICS_SB_SF_STATE
 #define DIAGNOSTICS_OB_TENDENCY
 
 #undef DIAGOB_SPECIAL_COMPILE_OPTION1

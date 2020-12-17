@@ -128,7 +128,7 @@ C     This is in the initialization of the boundary variables
 
 C     This is in the initialization of the surface variables
 
-      DO i=1, (sNy*sNx)*(nPx*nPy)
+      DO i=1, (sNy+sNx)*(nPx*nPy)
         global_SF(i) = 0.0
       ENDDO
 
@@ -143,12 +143,12 @@ C     This is in the initialization of the surface variables
         ENDDO
 
         DO i=1,2
-          DO j=1, sNx*sNy
+          DO j=1, sNx+sNy
             sf_sub_local_ij(sf_id, i, j) = 0
           ENDDO
         ENDDO
 
-        DO i=1, sNx*sNy
+        DO i=1, sNx+sNy
           DO fld=1, MAX_NFLDS
             subFieldOnMask_SF(sf_id, fld, i) = 0.0
             subFieldOnMask_SFavg(sf_id, fld, i) = 0.0
@@ -156,8 +156,7 @@ C     This is in the initialization of the surface variables
         ENDDO
 
         DO bj = myByLo(myThid), myByHi(myThid)
-        DO bi = myBxLo(myThid), myBxHi(myThid)
-
+         DO bi = myBxLo(myThid), myBxHi(myThid)
           DO i=1, Nx
             DO j=1, Ny
               global_sf_mask(sf_id,i,j,bi,bj) = 0.0
@@ -170,17 +169,17 @@ C     This is in the initialization of the surface variables
             ENDDO
           ENDDO
          ENDDO
-
         ENDDO
 
         DO i=1, nPx*nPy
           sf_numPnts_allproc(sf_id, i) = 0
-          DO j=1, sNx*sNy
+          DO j=1, sNx+sNy
             sf_sub_glo_indices_allproc(sf_id,i,j) = 0
           ENDDO
         ENDDO
 
       ENDDO
+
 
 C     Initializing number of time level passed to 1
       time_level = 1
@@ -214,23 +213,22 @@ C       Plotting for debugging
 
 C     Looping through each surface mask
       DO sf_id=1, nSF_mask
-      
-        print *,"INIT_FIXED: sf mask number", sf_id
+
+        print *,"INIT_FIXED: surface mask number", sf_id
         print *,"SF_FNAME: ",sf_fnames(sf_id)
 
-C       Read open boundary mask files and assign portion of open boundary mask to each process
+C       Read surface mask files and assign portion of surface mask to each process
         CALL READ_REC_XY_RL( sf_fnames(sf_id),
      &               sf_subMask(sf_id,:,:,:,:),1, 0, myThid )
 C       Filling in halo regions of sub masks
         _EXCH_XY_RL(sf_subMask(sf_id,:,:,:,:), myThid)
 
 C       Plotting for debugging
-        
         CALL PLOT_FIELD_XYRL( sf_subMask(sf_id,:,:,:,:),
-     &                'INIT_FIXED: SF Submask', -1, myThid )
+     &                'INIT_FIXED: Surface Submask', -1, myThid )
 
 #ifdef ALLOW_USE_MPI
-        CALL IDENTIFY_SURF_POINTS(sf_id, myThid)
+        CALL IDENTIFY_SF_POINTS(sf_id, myThid)
 #endif
       ENDDO
 
@@ -303,7 +301,12 @@ C       Store global_ob_masks into lookup table
 
       ENDDO
 
-C ---- The Surface Masks ----------------------------------------------------
+#endif
+
+
+#ifdef ALLOW_USE_MPI
+
+C ---- The Surface Masks ---------------------------------------------------
 
       DO sf_id=1, nSF_mask
 
@@ -318,8 +321,9 @@ C ---- Plotting for debugging
 
 C ---- Storing global_sf_masks into lookup table
 C ---- Loops stores elements of each mask in global_sf_mask into each row 
-C      of lookup_table
+C      of sf_lookup_table
 
+C       Store global_sf_masks into lookup table
       IF (mpiMyId .eq. 0) then
         counter = 1
         DO bj = myByLo(myThid), myByHi(myThid)
@@ -331,11 +335,12 @@ C      of lookup_table
               counter = counter + 1
             end do
            end do
-          END DO
-        END DO
+          end do
+        end do
       ENDIF
 
       ENDDO
+
 
 #endif
 
@@ -514,17 +519,16 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 
 
-
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 CBOP
-C !ROUTINE: IDENTIFY_SURF_POINTS
+C !ROUTINE: IDENTIFY_OB_POINTS
 
 C !INTERFACE:
-      SUBROUTINE IDENTIFY_SURF_POINTS(sf_id, myThid)
+      SUBROUTINE IDENTIFY_SF_POINTS(sf_id, myThid)
 
 C     !DESCRIPTION:
-C     Locate surface points within global domain, see below for 
+C     Locate open boundary points within global domain, see below for 
 C     detailed explanation
 
 #include "SIZE.h"
@@ -538,16 +542,15 @@ C     !INPUT PARAMETERS:
 
 C     !LOCAL VARIABLES:     
       INTEGER global_index
-      INTEGER counter, num_valid, iG, jG, i, j, bi, bj, sf
+      INTEGER counter, num_valid, iG, jG, i, j, bi, bj, ob
 CEOP
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
-C
-C     See IDENTIFY_OB_POINTS for description - this function is nearly 
-C     identical
-C
-C----&------------------------------------------------------------------xxxxxxx|
 CBOC
+
+C     /==================================================================\
+C     | Note: The variables below are defined within (?)                 |
+C     \==================================================================/
 
       iG = mpi_myXGlobalLo(mpiMyId+1)
       jG = mpi_myYGlobalLo(mpiMyId+1)
@@ -561,10 +564,6 @@ CBOC
 
              if (sf_subMask(sf_id,i,j,bi,bj) .ge. 1.0 ) then
 C              Computing global index
-C              old formula: works correctly, just too complicated
-C              global_index = int(((j-1)*sNx+(j-1)*(Nx-(iG+sNx-1))+
-C     &                       j*(iG-1)+i)+((jG-1)*Nx))
-C              new formula: works correctly, simple
                global_index = int((jG + (j-2))*Nx + iG + (i-1))
 
 C              First row contains local i's. Second row contains local j's.
@@ -597,7 +596,6 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 
 
-
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 CBOP
@@ -620,9 +618,8 @@ C     !LOCAL VARIABLES:
       INTEGER pid, ob_id, i, status(MPI_STATUS_SIZE), ierror
       INTEGER sf_id
       INTEGER g_ob_indices(sNx+sNy)
-      INTEGER g_sf_indices(sNx*sNy)
-      INTEGER ob_num_pts
-      INTEGER sf_num_pts
+      INTEGER g_sf_indices(sNx+sNy)
+      INTEGER num_pts
 CEOP
 C----&------------------------------------------------------------------xxxxxxx|
 CBOC 
@@ -632,12 +629,20 @@ C     | Note: MPI_SEND params: data_to_send, send_count, send_type,      |
 C     |                        destination_ID, tag, comm, ierror         |
 C     \==================================================================/
 
+C     /==================================================================\
+C     | Note: MPI_RECV params: received_data, receive_count,             |
+C     |                        receive_type, sender_ID, tag, comm,       |
+C     |                        status, ierror                            |
+C     \==================================================================/
 
-C ---- Here child process send global indices of ob and sf points, and then
-C      the count of the ob and sf points
+
+C---------------------------------------------------------------------------
+C ---- This section is for the open boundaries
+
+C ---- Here child process send global indices of ob points, and then
+C      the count of the ob points
 
         IF (mpiMyId .gt. 0) then
-
           DO ob_id=1, nOB_mask
             print *,"INIT_FIXED: on_numPnts_allproc from proc",
      &              mpiMyId,":", ob_numPnts_allproc
@@ -648,58 +653,65 @@ C      the count of the ob and sf points
             call MPI_SEND(ob_numPnts_allproc(ob_id,mpiMyId+1),
      &             1, MPI_INT,0, ob_id*100, MPI_COMM_MODEL, ierror)
           ENDDO
-
-          DO sf_id=1, nSF_mask
-            print *,"INIT_FIXED: sf_numPnts_allproc from proc",
-     &              mpiMyId,":", sf_numPnts_allproc
-            print *,"INIT_FIXED: BEFORE sub_glo_indices_allproc",
-     &              sf_sub_glo_indices_allproc(sf_id,mpiMyId+1,:)
-            call MPI_SEND(sf_sub_glo_indices_allproc(sf_id,mpiMyId+1,:),
-     &             sNx*sNy, MPI_INT,0, sf_id, MPI_COMM_MODEL, ierror)
-            call MPI_SEND(sf_numPnts_allproc(sf_id,mpiMyId+1),
-     &             1, MPI_INT,0, sf_id*100, MPI_COMM_MODEL, ierror)
-          ENDDO
-
         ENDIF
 
-
-C     /==================================================================\
-C     | Note: MPI_RECV params: received_data, receive_count,             |
-C     |                        receive_type, sender_ID, tag, comm,       |
-C     |                        status, ierror                            |
-C     \==================================================================/
-
-
 C ---- Here master process receives global indices from child process pid, 
-C      and then the count of OB and SF points from child process pid
+C      and then the count of OB points from child process pid
 
         IF (mpiMyId .eq. 0) then
           DO pid=1, nPx*nPy-1
-
             DO ob_id=1, nOB_mask
               call MPI_RECV(g_ob_indices, sNx+sNy, MPI_INT,
      &                   pid, ob_id ,MPI_COMM_MODEL, status, ierror)
-              call MPI_RECV(ob_num_pts, 1, MPI_INT,
+              call MPI_RECV(num_pts, 1, MPI_INT,
      &                   pid, ob_id*100 ,MPI_COMM_MODEL, status, ierror)
+
               DO i=1, sNx+sNy
                ob_sub_glo_indices_allproc(ob_id,pid+1,i) 
      &                   = g_ob_indices(i)
               ENDDO
-              ob_numPnts_allproc(ob_id,pid+1) = ob_num_pts
+              ob_numPnts_allproc(ob_id,pid+1) = num_pts
             ENDDO
+          ENDDO
+         ENDIF
 
+
+C---------------------------------------------------------------------------
+C ---- This section is for the surface
+
+C ---- Here child process send global indices of sf points, and then
+C      the count of the sf points
+
+        IF (mpiMyId .gt. 0) then
+          DO sf_id=1, nSF_mask
+            print *,"INIT_FIXED: sf_numPnts_allproc from proc",
+     &              mpiMyId,":", sf_numPnts_allproc
+            print *,"INIT_FIXED: BEFORE sf_sub_glo_indices_allproc",
+     &              sf_sub_glo_indices_allproc(sf_id,mpiMyId+1,:)
+            call MPI_SEND(sf_sub_glo_indices_allproc(sf_id,mpiMyId+1,:),
+     &             sNx+sNy, MPI_INT,0, sf_id, MPI_COMM_MODEL, ierror)
+            call MPI_SEND(sf_numPnts_allproc(sf_id,mpiMyId+1),
+     &             1, MPI_INT,0, sf_id*100, MPI_COMM_MODEL, ierror)
+          ENDDO
+        ENDIF
+
+C ---- Here master process receives global indices from child process pid, 
+C      and then the count of SF points from child process pid
+
+        IF (mpiMyId .eq. 0) then
+          DO pid=1, nPx*nPy-1
             DO sf_id=1, nSF_mask
-              call MPI_RECV(g_sf_indices, sNx*sNy, MPI_INT,
+              call MPI_RECV(g_sf_indices, sNx+sNy, MPI_INT,
      &                   pid, sf_id ,MPI_COMM_MODEL, status, ierror)
-              call MPI_RECV(sf_num_pts, 1, MPI_INT,
+              call MPI_RECV(num_pts, 1, MPI_INT,
      &                   pid, sf_id*100 ,MPI_COMM_MODEL, status, ierror)
-              DO i=1, sNx*sNy
+
+              DO i=1, sNx+sNy
                sf_sub_glo_indices_allproc(sf_id,pid+1,i) 
      &                   = g_sf_indices(i)
               ENDDO
-              sf_numPnts_allproc(sf_id,pid+1) = sf_num_pts
+              sf_numPnts_allproc(sf_id,pid+1) = num_pts
             ENDDO
-
           ENDDO
          ENDIF
 

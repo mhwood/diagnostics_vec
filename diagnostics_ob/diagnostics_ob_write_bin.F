@@ -212,10 +212,6 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 
 
-
-
-
-
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 CBOP
@@ -233,7 +229,7 @@ C     !USES:
 #include "DIAGNOSTICS_OB.h"
 
 C     !INPUT PARAMETERS:
-      INTEGER total_valid, sf_id, fld, myIter
+       INTEGER total_valid, sf_id, fld, myIter
 
 C     !LOCAL VARIABLES:
 
@@ -243,7 +239,7 @@ C
 C     /==================================================================\
 C     | Description                                                      |
 C     |==================================================================|
-C     | WRITE_GLOBAL_BIN_SF:                                                |
+C     | WRITE_GLOBAL_BIN_SF:                                             |
 C     | This program writes the final output (global final array) to a   |
 C     | binary file.                                                     |
 C     |                                                                  |
@@ -254,20 +250,21 @@ C     |         - Each time level is written into its own record in the  |
 C     |           binary file                                            |
 C     |   2. Write a separates binary file for each time level           |
 C     |         - File names consist of iter number:                     |
-C     |               MASK_SF_NN_FIELD_ITER.bin                          |
+C     |               MASK_OB_NN_FIELD_ITER.bin                          |
 C     |                                                                  |
 C     | input params:                                                    |
 C     | total_valid - total number of open boundary points to write      | 
 C     | fld - field number                                               |
 C     | sf_id - open boundary number                                     |
 C     | myIter - current iter number                                     |
+C     | nDim - number of dimensions in field (either 2D or 3D)           |
 C     \==================================================================/
 C
 C----&------------------------------------------------------------------xxxxxxx|
 CBOC 
        character*2 dir
        character*50 filename
-       real*4 bufferR4_SF((sNy*sNx)*(nPx*nPy))
+       real*4 bufferR4_2D((sNy+sNx)*(nPx*nPy))
        integer, parameter :: debug = 1
        logical exists
        integer LEN, i
@@ -279,13 +276,14 @@ CBOC
 
 C       -----------------------------------------------------------------------
 C       File precision: 32
+C       Field dimension: 2
 C       -----------------------------------------------------------------------
-         call SF_R8_to_R4(bufferR4_SF,fld,sf_id)
+         call SF_R8_to_R4(bufferR4_2D,fld,sf_id)
          call CREATE_FILENAME_SF(dir, sf_flds(fld,sf_id), sf_id,
      &                      filename,0, myIter)
          IF (combineMaskTimeLevels) then
 C         Writing all time levels into a single binary file
-          INQUIRE (IOLENGTH = LEN) bufferR4_SF(1:total_valid)
+          INQUIRE (IOLENGTH = LEN) bufferR4_2D(1:total_valid)
           INQUIRE (FILE=filename, EXIST=exists)
 C         If file already exists, set status as 'old'. Otherwise, 'replace'
           if (exists) then
@@ -295,19 +293,19 @@ C         If file already exists, set status as 'old'. Otherwise, 'replace'
            open(1, FILE=filename, STATUS='REPLACE', ACCESS='DIRECT',
      &          RECL = LEN )
           endif
-          write(1, REC=time_level) bufferR4_SF(1:total_valid)
+          write(1, REC=time_level) bufferR4_2D(1:total_valid)
          ELSE
 C         Write each time level into its own binary file
           open(1, FILE=filename, FORM="unformatted",ACCESS='STREAM')
-          write(1) bufferR4_SF(1:total_valid)
+          write(1) bufferR4_2D(1:total_valid)
          ENDIF
          close(1)
-
 
        ELSE IF (ob_filePrec .eq. 64) then
 
 C       -----------------------------------------------------------------------
 C       File precision: 64
+C       Field dimension: 2
 C       -----------------------------------------------------------------------
          call CREATE_FILENAME_SF(dir, sf_flds(fld,sf_id), sf_id,
      &                      filename,0, myIter)
@@ -336,8 +334,6 @@ C         If file already exists, set status as 'old'. Otherwise, 'replace'
 CEOC
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
-
-
 
 
 
@@ -450,7 +446,7 @@ C     !LOCAL VARIABLES:
        _RL myTime
        character*3 str_px, str_py
        character*11 str_time
-       character*2 str_sf
+       character*2 str_ob
        character*8 str_iter
        integer len, count
 C----&------------------------------------------------------------------xxxxxxx|
@@ -461,7 +457,7 @@ c       If creating a filename for a child process, create a name in the format:
 c       T for temp or mask for mask
 c       001 for index 1 in x axis
 c       002 for index 2 in x axis
-       write(str_sf, "(I2.2)") sf_id
+       write(str_ob, "(I2.2)") sf_id
        write(str_iter, "(I8.8)") myIter
        write(str_time, "(F11.0)") myTime
 
@@ -481,10 +477,10 @@ C       Counting number of valid characters to trim trailing whitespaces
        else
 c         Creating a filename for global arrays
          IF (combineMaskTimeLevels) then
-          write(filename, "(5A)") "MASK_SF_", str_sf, "_",
+          write(filename, "(5A)") "MASK_SF_", str_ob, "_",
      &                            fldNm(1:count),".bin"
          ELSE
-           write(filename, "(7A)") "MASK_SF_", str_sf, "_",
+           write(filename, "(7A)") "MASK_SF_", str_ob, "_",
      &                   fldNm(1:count),"_",str_iter,".bin"
          ENDIF
 
@@ -562,7 +558,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
-      SUBROUTINE SF_R8_to_R4(bufferR4_SF,fld,sf_id)
+      SUBROUTINE SF_R8_to_R4(bufferR4_2D,fld,sf_id)
       IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
@@ -570,26 +566,26 @@ C----&------------------------------------------------------------------xxxxxxx|
 #include "DIAGNOSTICS_OB.h"
 
 C     !INPUT PARAMETERS:
-        real*4 bufferR4_SF((sNy*sNx)*(nPx*nPy))
-        integer nDim, fld, sf_id
+        real*4 bufferR4_2D((sNy+sNx)*(nPx*nPy))
+        integer fld, sf_id
 
 C     !LOCAL VARIABLES:
         integer, parameter :: debug = 0
-        integer i, k
+        integer i
   
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 
 C        Initialize buffer arrays:
-       do i=1, (sNy*sNx)*(nPx*nPy)
-         bufferR4_SF(i) = 0.0
+       do i=1, (sNy+sNx)*(nPx*nPy)
+         bufferR4_2D(i) = 0.0
        enddo
 
 C        Set real*8 values to real*4
 
-        do i=1, (sNy*sNx)*(nPx*nPy)
-          bufferR4_SF(i) = global_SF(i)
-        enddo
+       do i=1, (sNy+sNx)*(nPx*nPy)
+         bufferR4_2D(i) = global_SF(i)
+       enddo
 
       END
 C----&------------------------------------------------------------------xxxxxxx|

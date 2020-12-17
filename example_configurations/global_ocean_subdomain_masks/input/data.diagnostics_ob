@@ -36,7 +36,7 @@
 
  nml_avgPeriod = 86400.,
  nml_startTime = 0,
- nml_endTime = 788400000.,
+ nml_endTime = 1576800000.,
 
  nml_obFiles(1) = 'boundary_mask_south.bin',
  nml_obFiles(2) = 'boundary_mask_east.bin',

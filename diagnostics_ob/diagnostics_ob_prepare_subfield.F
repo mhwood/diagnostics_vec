@@ -52,6 +52,9 @@ C----&------------------------------------------------------------------xxxxxxx|
        ENDDO
       ENDIF
 
+C     Boundary starts first ----------------------------------------------------
+
+
 C     Initialize tag number to 1. Tag number will be incrememted after each field is extracted.
       ob_tag = 1
       DO ob_id=1, nOB_mask
@@ -79,20 +82,6 @@ C          Comparing strings provided by user to fields in diagnostics_ob
             subFieldOnMask_2D(ob_id,fld2D,loc_count) = etaN(i,j,bi,bj)
            ELSE IF (ob_flds2D(fld2D,ob_id) .eq. 'ETAH') then
             subFieldOnMask_2D(ob_id,fld2D,loc_count) = etaH(i,j,bi,bj)
-C           ELSE IF (ob_flds2D(fld2D,ob_id) .eq. 'AREA') then
-C            subFieldOnMask_2D(ob_id,fld2D,loc_count) = AREA(i,j,bi,bj)
-C           ELSE IF (ob_flds2D(fld2D,ob_id) .eq. 'HEFF') then
-C            subFieldOnMask_2D(ob_id,fld2D,loc_count) = HEFF(i,j,bi,bj)
-C           ELSE IF (ob_flds2D(fld2D,ob_id) .eq. 'HSNOW') then
-C            subFieldOnMask_2D(ob_id,fld2D,loc_count) = HSNOW(i,j,bi,bj)
-C#ifdef SEAICE_VARIABLE_SALINITY
-C           ELSE IF (ob_flds2D(fld2D,ob_id) .eq. 'HSALT') then
-C            subFieldOnMask_2D(ob_id,fld2D,loc_count) = HSALT(i,j,bi,bj)
-C#endif /* SEAICE_VARIABLE_SALINITY */
-C           ELSE IF (ob_flds2D(fld2D,ob_id) .eq. 'UICE') then
-C            subFieldOnMask_2D(ob_id,fld2D,loc_count) = UICE(i,j,bi,bj)
-C           ELSE IF (ob_flds2D(fld2D,ob_id) .eq. 'VICE') then
-C            subFieldOnMask_2D(ob_id,fld2D,loc_count) = VICE(i,j,bi,bj)
            ENDIF
           ENDDO
          ENDDO
@@ -179,7 +168,7 @@ C     Initialize tag number to 1. Tag number will be incrememted after each fiel
 C       Number of open boundary points for mask sf_id and process mpiMyId (added one because of fortran's indices starting from 1 )
         numValid = sf_numPnts_allproc(sf_id,mpiMyId+1)
 
-C      Looping through SF fields, if any.
+C      Looping through 2D fields first, if any.
        nFldsSF = sf_nFlds(sf_id)
        DO fldSF=1, nFldsSF
 
@@ -187,7 +176,6 @@ C       Save unique tag for field and incremement tag for next field to be extra
         sf_tags(sf_id, 1, fldSF) =  sf_tag
         sf_tag = sf_tag + 1
 
-       
         DO bj = myByLo(myThid), myByHi(myThid)
          DO bi = myBxLo(myThid), myBxHi(myThid)
           DO loc_count=1, numValid
@@ -196,54 +184,41 @@ C          i,j indices with respect to process' sub mask for open boundary point
            i = sf_sub_local_ij(sf_id,1,loc_count)
 
 C          Comparing strings provided by user to fields in diagnostics_ob
-C           IF (sf_flds(fld2D,sf_id) .eq. 'AREA') then
-C            subFieldOnMask_2D(sf_id,fld2D,loc_count) = AREA(i,j,bi,bj)
-C           ELSE IF (sf_flds(fld2D,sf_id) .eq. 'HEFF') then
-C            subFieldOnMask_2D(sf_id,fld2D,loc_count) = HEFF(i,j,bi,bj)
-C           ELSE IF (sf_flds(fld2D,sf_id) .eq. 'HSNOW') then
-C            subFieldOnMask_2D(sf_id,fld2D,loc_count) = HSNOW(i,j,bi,bj)
-C#ifdef SEAICE_VARIABLE_SALINITY
-C           ELSE IF (sf_flds(fld2D,sf_id) .eq. 'HSALT') then
-C            subFieldOnMask_2D(sf_id,fld2D,loc_count) = HSALT(i,j,bi,bj)
-C#endif /* SEAICE_VARIABLE_SALINITY */
-C           ELSE IF (sf_flds(fld2D,sf_id) .eq. 'UICE') then
-C            subFieldOnMask_2D(sf_id,fld2D,loc_count) = UICE(i,j,bi,bj)
-C           ELSE IF (sf_flds(fld2D,sf_id) .eq. 'VICE') then
-C            subFieldOnMask_2D(sf_id,fld2D,loc_count) = VICE(i,j,bi,bj)
            IF (sf_flds(fldSF,sf_id) .eq. 'ETAN') then
             subFieldOnMask_SF(sf_id,fldSF,loc_count) = etaN(i,j,bi,bj)
-            ELSE IF (sf_flds(fldSF,sf_id) .eq. 'ETAH') then
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'ETAH') then
             subFieldOnMask_SF(sf_id,fldSF,loc_count) = etaH(i,j,bi,bj)
-            ELSEIF (sf_flds(fld3D,ob_id) .eq. 'UVEL') then
-             subFieldOnMask_SF(ob_id,fldSF,loc_count) =
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'UVEL') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        uVel(i,j,1,bi,bj)
-            ELSE IF (sf_flds(fldSF,ob_id) .eq. 'VVEL') then
-              subFieldOnMask_SF(ob_id,fldSF,loc_count) =
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'VVEL') then
+              subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        vVel(i,j,1,bi,bj)
-            ELSE IF (sf_flds(fldSF,ob_id) .eq. 'WVEL') then
-             subFieldOnMask_SF(ob_id,fldSF,loc_count) =
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'WVEL') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        wVel(i,j,1,bi,bj)
-            ELSE IF (sf_flds(fldSF,ob_id) .eq. 'THETA') then
-              subFieldOnMask_SF(ob_id,fldSF,loc_count) =
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'THETA') then
+              subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        theta(i,j,1,bi,bj)
-            ELSE IF (sf_flds(fldSF,ob_id) .eq. 'SALT') then
-              subFieldOnMask_SF(ob_id,fldSF,loc_count)=
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SALT') then
+              subFieldOnMask_SF(sf_id,fldSF,loc_count)=
      &                                       salt(i,j,1,bi,bj)
-            ELSE IF (sf_flds(fldSF,ob_id) .eq. 'GU') then
-              subFieldOnMask_SF(ob_id,fldSF,loc_count) =
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'GU') then
+              subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        gU(i,j,1,bi,bj)
-            ELSE IF (sf_flds(fldSF,ob_id) .eq. 'GV') then
-              subFieldOnMask_SF(ob_id,fldSF,loc_count) =
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'GV') then
+              subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        gV(i,j,1,bi,bj)
            ENDIF
           ENDDO
          ENDDO
         ENDDO
-
-C       !End of loop for nFldsSF
+C      !end of loop for nFldsSF
        ENDDO
+
 C     !End of loop for nSF_mask
       ENDDO
+
 
       END
 C----&------------------------------------------------------------------xxxxxxx|
@@ -293,15 +268,15 @@ c        Total number of 3D fields
 
         ENDDO
 
+
         DO sf_id=1, nSF_mask
 C        Total number of SF fields
-         nFldsSF= sf_nFlds(sf_id)
+         nFldsSF = sf_nFlds(sf_id)
          DO fldSF=1, nFldsSF
-          DO i=1, sNx*sNy
+          DO i=1, sNx+sNy
            subFieldOnMask_SFavg(sf_id,fldSF,i) = 0.0
           ENDDO
          ENDDO
-
         ENDDO
 
       END
@@ -346,7 +321,7 @@ C     !USES:
 
       INTEGER myThid
       INTEGER i, k, ob_id, fld, fld2D, fld3D
-        INTEGER sf_id, fldSF
+      INTEGER sf_id, fldSF
 
 C----&------------------------------------------------------------------xxxxxxx|
       DO ob_id=1, nOB_mask
@@ -367,12 +342,13 @@ C----&------------------------------------------------------------------xxxxxxx|
       ENDDO
 
       DO sf_id=1, nSF_mask
-       DO i=1, sNx*sNy
+       DO i=1, sNx+sNy
         DO fldSF=1, sf_nFlds(sf_id)
          subFieldOnMask_SFavg(sf_id,fldSF,i)
      &                      = subFieldOnMask_SFavg(sf_id,fldSF,i)
      &                        + subFieldOnMask_SF(sf_id,fldSF,i)
         ENDDO
+
        ENDDO
       ENDDO
 
@@ -406,7 +382,7 @@ C     !USES:
 
         INTEGER myThid
         INTEGER i, k,fld, ob_id, fld2D, fld3D
-        INTEGER sf_id, fldSF
+C-SF        INTEGER sf_id, fldSF
         _RL myTime
 
 C----&------------------------------------------------------------------xxxxxxx|
@@ -427,14 +403,15 @@ C----&------------------------------------------------------------------xxxxxxx|
        ENDDO
 
 
-       DO sf_id=1, nSF_mask
-          DO i=1, sNx*sNy
+        DO sf_id=1, nSF_mask
+          DO i=1, sNx+sNy
            DO fldSF=1, sf_nFlds(sf_id)
             subFieldOnMask_SFavg(sf_id,fldSF,i) =
      &              subFieldOnMask_SFavg(sf_id,fldSF,i)/nTimeSteps_ob
            ENDDO
           ENDDO
-       ENDDO
+
+        ENDDO
 
 C       Set number of time steps within averaging period back to zero for the next averaging period
        nTimeSteps_ob = 0

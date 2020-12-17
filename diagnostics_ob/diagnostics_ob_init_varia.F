@@ -29,7 +29,7 @@ C     myThid ::  my Thread Id number
       INTEGER myThid
 
 C     !LOCAL VARIABLES:
-      INTEGER i,j,k,l, bi,bj
+C      INTEGER i,j,k,l, bi,bj
 
 CEOP
 C------------------------------------------------------------------------------|

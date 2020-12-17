@@ -44,17 +44,15 @@ C     !LOCAL VARIABLES:
        INTEGER fldSF
        INTEGER ob_subMask_size, ob_id
        INTEGER sf_subMask_size, sf_id
-       INTEGER ob_tag
-       INTEGER sf_tag
+       INTEGER tag
        INTEGER total_valid
        REAL*8 buffer2D(sNx+sNy)
        REAL*8 buffer3D(sNx+sNy, Nr)
-       REAL*8 bufferSF(sNx*sNy)
+       REAL*8 bufferSF(sNx+sNy)
 
        INTEGER, PARAMETER :: debug = 0
        INTEGER, PARAMETER :: print_debug = 0
        INTEGER, PARAMETER :: send_debug = 0
-       INTEGER, PARAMETER :: sf_send_debug = 1
 
        LOGICAL DIFFERENT_MULTIPLE
 
@@ -186,7 +184,7 @@ C       Initializing local arrays
           ENDDO
         ENDDO
 
-        DO i=1,sNx*sNy
+        DO i=1,sNx+sNy
           bufferSF(i) = 0.0
         ENDDO
 
@@ -218,11 +216,9 @@ C      If at end of averaging period:
      &       .AND.DIFFERENT_MULTIPLE(avgPeriod_ob,myTime,deltaTClock))
      &       .AND. (myTime .le. endTime_ob)) THEN
 
-C       Compute time average of all sub fields (incl. surface)
+C       Compute time average of all sub fields
         CALL TIMEAVE_OB_FLD(myThid, myTime)
 
-C----&--------------------------------
-C      Loop through the boundary masks
 
 C       Now looping through each boundary mask and communicating fields between master process and child processes
         DO ob_id=1, nOB_mask
@@ -233,54 +229,49 @@ C         Processes 1 and onward send sub fields to master process
 C         if they have open boundary points
           if (ob_numPnts_allproc(ob_id,mpiMyId+1) .ge. 1) then
 
-           print *,"Yes going to send for ob mask", ob_id
+           print *,"Yes going to send for mask", ob_id
 
            DO fld2D=1, ob_nFlds2D(ob_id)
 C           Convert _RL array to R8 array
             call OB_PASS_RL_to_R8(buffer2D,buffer3D,ob_id,2,fld2D)
 
-            ob_tag = ob_tags(ob_id, 1, fld2D)
+            tag = ob_tags(ob_id, 1, fld2D)
 
             if (send_debug .eq. 1) then
              print *,"Sending field", ob_flds2D(fld2D,ob_id)
-             print*,"Sending with ob_tag:",ob_tag,"for ob_id",ob_id,
+             print*,"Sending with tag:",tag,"for ob_id",ob_id,
      &             "fld2D",fld2D, "at myIter", myIter, "proc",mpiMyId
              print *,"Sending array"
              print *,buffer2D
             endif
 
-            print *,"In MPI_SEND for 2D, sNx+sNy=",sNx+sNy
 C           Send R8 array to master process
-            call MPI_SEND(buffer2D, sNx+sNy, MPI_REAL8, 0, ob_tag,
+            call MPI_SEND(buffer2D, sNx+sNy, MPI_REAL8, 0, tag,
      &                    MPI_COMM_MODEL, ierror)
 
            ENDDO
 
 
            DO fld3D=1, ob_nFlds3D(ob_id)
-            ob_tag = ob_tags(ob_id, 2, fld3D)
+            tag = ob_tags(ob_id, 2, fld3D)
 C           Convert _RL array to R8 array
             call OB_PASS_RL_to_R8(buffer2D,buffer3D,ob_id,3,fld3D)
 
             if (send_debug .eq. 1) then
              print *,"Sending field", ob_flds3D(fld3D,ob_id), "for mask"
      &              , ob_id
-             print*,"Sending with ob_tag:",ob_tag,"for ob_id",ob_id,
+             print*,"Sending with tag:",tag,"for ob_id",ob_id,
      &             "fld3D",fld3D, "at myIter", myIter, "proc",mpiMyId
              print *,"Sending array shape: ", shape(buffer3D)
             endif
 
-
 C           Send R8 array to master process
-            print *,"In MPI_SEND for 3D,",
-     &              "ob_levels3D(fld3D,ob_id)*(sNx+sNy)=",
-     &              ob_levels3D(fld3D,ob_id)*(sNx+sNy)
             call MPI_SEND(buffer3D, ob_levels3D(fld3D,ob_id)*(sNx+sNy),
-     &                    MPI_REAL8, 0, ob_tag, MPI_COMM_MODEL, ierror)
+     &                    MPI_REAL8, 0, tag, MPI_COMM_MODEL, ierror)
 
             if (send_debug .eq. 1) then
              DO k=1, ob_levels3D(fld3D,ob_id)
-              print *,"printing at level k",k, "with ob_tag", ob_tag
+              print *,"printing at level k",k, "with tag", tag
               print*,buffer3D(:,k)
              ENDDO
             endif
@@ -291,35 +282,25 @@ C           Send R8 array to master process
 
 #endif
 
-
-C----&------------------------------------------------------------------xxxxxxx|
-C           Master Process Tasks:
-C           1. Append Local Arrays in process 0
-C           2. Receive time-averaged field values on open boundary points from
-C              child processes > 0 through MPI and append to final array.
-C           3. Write final output to binary file
-C----&------------------------------------------------------------------xxxxxxx|
          IF (mpiMyId .eq. 0) then
-
-
           DO fld2D=1, ob_nFlds2D(ob_id)
             call OB_MASTER_PROC_TASKS(fld2D, ob_id, 2, myThid, myTime,
      &                                myIter)
           ENDDO
-
           DO fld3D=1, ob_nFlds3D(ob_id)
             call OB_MASTER_PROC_TASKS(fld3D, ob_id, 3, myThid, myTime,
      &                                myIter)
           ENDDO
-
-
-C         !ENDIF for mpiMyId .eq. 0
          ENDIF
+
+
 C       !ENDDO for ob_id
         ENDDO
 
-C----&--------------------------------
-C      Loop through the surface masks
+
+
+
+C ---- Surface Masks --------------------------------------------------------------------
 
 C       Now looping through each surface mask and communicating fields between master process and child processes
         DO sf_id=1, nSF_mask
@@ -327,33 +308,29 @@ C       Now looping through each surface mask and communicating fields between m
 #ifdef ALLOW_USE_MPI
          if (mpiMyId .gt. 0) then
 C         Processes 1 and onward send sub fields to master process
-C         if they have open boundary points
+C         if they have surface points
           if (sf_numPnts_allproc(sf_id,mpiMyId+1) .ge. 1) then
 
-           print *,"Yes going to send for sf mask", sf_id
+           print *,"Yes going to send for mask", sf_id
 
            DO fldSF=1, sf_nFlds(sf_id)
 C           Convert _RL array to R8 array
-                call SF_PASS_RL_to_R8(bufferSF,sf_id,fldSF)
-    
-            sf_tag = sf_tags(sf_id, 1, fld2D)
+            call SF_PASS_RL_to_R8(bufferSF,sf_id,fldSF)
 
-            if (sf_send_debug .eq. 1) then
-             print *,"Sending field ", sf_flds(fldSF,sf_id)
-             print*,"Sending with sf_tag:",sf_tag,"for sf_id",sf_id,
+            tag = sf_tags(sf_id, 1, fldSF)
+
+            if (send_debug .eq. 1) then
+             print *,"Sending field", sf_flds(fldSF,sf_id)
+             print*,"Sending with tag:",tag,"for sf_id",sf_id,
      &             "fldSF",fldSF, "at myIter", myIter, "proc",mpiMyId
-             print *,"Sending array shape: ", shape(bufferSF)
-C             print *,"Sending array"
+             print *,"Sending array"
 C             print *,bufferSF
-             print *,"Calling MPI_SEND for SF"
-             print *,"In MPI_SEND for SF, sNx*sNy=",sNx*sNy
             endif
 
-              
 C           Send R8 array to master process
-C-SF                call MPI_SEND(bufferSF, sNx*sNy, MPI_REAL8, 0, sf_tag,
-C-SF     &                    MPI_COMM_MODEL, ierror)
-    
+            call MPI_SEND(bufferSF, sNx+sNy, MPI_REAL8, 0, tag,
+     &                    MPI_COMM_MODEL, ierror)
+
            ENDDO
 
           end if
@@ -362,29 +339,18 @@ C-SF     &                    MPI_COMM_MODEL, ierror)
 #endif
 
 
-C----&------------------------------------------------------------------xxxxxxx|
-C           Master Process Tasks:
-C           1. Append Local Arrays in process 0
-C           2. Receive time-averaged field values on open boundary points from
-C              child processes > 0 through MPI and append to final array.
-C           3. Write final output to binary file
-C----&------------------------------------------------------------------xxxxxxx|
          IF (mpiMyId .eq. 0) then
-              print *,"Calling SF_MASTER_PROC_TASKS"
           DO fldSF=1, sf_nFlds(sf_id)
             call SF_MASTER_PROC_TASKS(fldSF, sf_id, myThid, myTime,
      &                                myIter)
           ENDDO
-
 C         !ENDIF for mpiMyId .eq. 0
          ENDIF
+
 C       !ENDDO for sf_id
         ENDDO
 
-C----------------------------------------------------
 
-
-C      !ENDIF for end of averaging period
 
 C      Set averages back to zero
        CALL SET_TO_INI_STATE(myThid)
@@ -392,7 +358,7 @@ C      Set averages back to zero
 C      Incrementing number of time levels passed
        time_level = time_level + 1
 
-C     C     !ENDIF for end of averaging period
+C     !ENDIF for end of averaging period
       ENDIF
 C      Move on to next time step
        nTimeSteps_ob = nTimeSteps_ob + 1
@@ -496,7 +462,7 @@ C       Add onto total number of OB points
          do k=1, ob_levels3D(fld,ob_id)
           print *,"MASTER 3D: global_ob3D at depth",k,"with total_valid"
      &            ,total_valid
-C          call PRINT_FLOAT_ARR(global_ob3D(:,k), total_valid)
+          call PRINT_FLOAT_ARR(global_ob3D(:,k), total_valid)
          enddo
         end if
        end if
@@ -585,7 +551,7 @@ C      Plotting final output into a Nx by Ny array for debugging
         print *,"MASTER: For mask", ob_id
         print *,"Plotting final array at time", myTime
        end if
-C       call PLOT_TEST_GLOBAL_OB(myThid, ob_id, fld, nDim, myIter)
+       call PLOT_TEST_GLOBAL_OB(myThid, ob_id, fld, nDim, myIter)
 
 C      Writing final output to binary file
        print *,"WRITE TO FILE FOR MASK",ob_id
@@ -608,8 +574,9 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
+
       SUBROUTINE SF_MASTER_PROC_TASKS(fld, sf_id, myThid, myTime,
-     & myIter)
+     &                             myIter)
 C     Appending subFields to final global_ob array
 #include "SIZE.h"
 #include "EEPARAMS.h"
@@ -625,20 +592,20 @@ C     myThid :: thread number
 C     myTime :: current time in model
       INTEGER fld, sf_id, myThid, myIter
       _RL myTime
-      REAL*8 bufferSF(sNx*sNy)
+      REAL*8 bufferSF(sNx+sNy)
 
       _RS dummyRS(1)
       INTEGER pid, status(MPI_STATUS_SIZE), ierror, tag
       INTEGER total_valid, i, k, count
       INTEGER, PARAMETER :: debug = 1
-      INTEGER, PARAMETER :: recv_debug = 1
+      INTEGER, PARAMETER :: recv_debug = 0
       INTEGER, PARAMETER :: write_to_binary = 0
-C----&------------------------------------------------------------------xxxxxxx|
-C----&------------------------------------------------------------------xxxxxxx|
+
+
       common / local_var / total_valid
       common / mpi_var / status, ierror
 
-      DO i=1,sNx*sNy
+      DO i=1,sNx+sNy
         bufferSF(i) = 0.0
       ENDDO
 
@@ -650,8 +617,6 @@ C          valid elements in those local arrays > 0
 C     - Indices referring to process IDs begin with 1 in sf_numPnts_allproc and
 C          subFieldOnMask_SFavg
 C-------------------------------------------------------------------------------
-      call APPEND_SF_VALUE(sf_id,0,bufferSF)
-      
       if (debug .eq. 1) then
        print *,"MASTER: sf_numPnts_allproc ",
      &            sf_numPnts_allproc(sf_id,1), "at sf_id",sf_id
@@ -660,17 +625,16 @@ C-------------------------------------------------------------------------------
       IF (sf_numPnts_allproc(sf_id,1).ge.1) then
 
         call SF_PASS_RL_to_R8(bufferSF, sf_id, fld)
-C       Append process 0's 2D time-averaged field value on OB points to final array
+C       Append process 0's SF time-averaged field value on SF points to final array
         call APPEND_SF_VALUE(sf_id, 0, bufferSF)
-C       Add onto total number of OB points
+C       Add onto total number of SF points
         total_valid = total_valid + sf_numPnts_allproc(sf_id, 1)
 
         if (debug .eq. 1) then
          print *,"MASTER SF: mask number:", sf_id, ",field",
      &            sf_flds(fld,sf_id)
          print *,"MASTER SF: appended local field to global array"
-     &          ," with ",sf_numPnts_allproc(sf_id, 1),
-     &          "valid elements:"
+     &          ," with ",sf_numPnts_allproc(sf_id, 1),"valid elements:"
          print *,"MASTER SF: global_SF: with total_valid",total_valid
          call PRINT_FLOAT_ARR(global_SF, total_valid)
         end if
@@ -691,32 +655,32 @@ C       If number of valid elements is greater than or equal to 1
         IF (sf_numPnts_allproc(sf_id,pid+1) .ge. 1) then
 
          if (debug .eq. 1) then
-          print *,"MASTER SF: DO pid loop to receive with MPI"
-          print*,"MASTER SF: ",sf_numPnts_allproc(sf_id,pid+1),
+          print *,"MASTER: DO pid loop to receive with MPI"
+          print*,"MASTER: ",sf_numPnts_allproc(sf_id,pid+1),
      &           "elements for mask", sf_id, "at pid",pid
-          print *,"MASTER SF: time to receive",
+          print *,"MASTER: time to receive",
      &                    sf_numPnts_allproc(sf_id,pid+1), "elements"
          endif
 
-         tag = sf_tags(sf_id, 1, fld)
-C        !MPI_RECV params: received_data, receive_count, receive_type, sender_ID, tag, comm, status, ierror
-C        Master process receiving time-averaged 2Dfield values on OB points from process pid
-C-SF         call MPI_RECV(bufferSF, sNx*sNy, MPI_REAL8,
-C-SF     &                  pid, tag ,MPI_COMM_MODEL, status, ierror)
+          tag = sf_tags(sf_id, 1, fld)
+C         !MPI_RECV params: received_data, receive_count, receive_type, sender_ID, tag, comm, status, ierror
+C         Master process receiving time-averaged surface field values on SF points from process pid
+          call MPI_RECV(bufferSF, sNx+sNy, MPI_REAL8,
+     &                   pid, tag ,MPI_COMM_MODEL, status, ierror)
 
-         if (recv_debug .eq. 1) then
-          print *, "MASTER SF Received from process", pid
-          print *, "MASTER Received bufferSF for field ",
-     &               sf_flds(fld, sf_id)
-          print *, "MASTER bufferSF shape:", shape(bufferSF)
-          print *, "MASTER Displaying FULL 2D array, beyond number of"
-     &                      ," valid elements"
-          print *,bufferSF
-         end if
-C        Appending the received time-averaged 2D field values on OB points from process pid
-         call APPEND_SF_VALUE(sf_id, pid, bufferSF)
+          if (recv_debug .eq. 1) then
+           print *, "MASTER SF Received from process", pid
+           print *, "MASTER Received bufferSF for field ",
+     &                sf_flds(fld, sf_id)
+           print *, "MASTER bufferSF shape:", shape(bufferSF)
+           print *, "MASTER Displaying FULL SF array, beyond number of"
+     &                       ," valid elements"
+C           print *,bufferSF
+          end if
+C         Appending the received time-averaged SF field values on SF points from process pid
+          call APPEND_SF_VALUE(sf_id, pid, bufferSF)
 
-C        Keeping count of total number of OB points for each mas
+C        Keeping count of total number of OB points for each mask
          total_valid = total_valid + sf_numPnts_allproc(sf_id, pid+1)
 
 C       !ENDIF for number of valid elements
@@ -732,7 +696,7 @@ C      Plotting final output into a Nx by Ny array for debugging
         print *,"MASTER: For mask", sf_id
         print *,"Plotting final array at time", myTime
        end if
-       call PLOT_TEST_GLOBAL_SF(myThid, sf_id, fld, nDim, myIter)
+       call PLOT_TEST_GLOBAL_OB(myThid, sf_id, fld, nDim, myIter)
 
 C      Writing final output to binary file
        print *,"WRITE TO FILE FOR MASK",sf_id
@@ -742,6 +706,7 @@ C      Writing final output to binary file
       END
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
+
 
 
 
@@ -870,44 +835,45 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 
 
-
-
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
       SUBROUTINE APPEND_SF_VALUE(sf_id, pid, sf_values)
-C       Appends field value corresponding to surface points to final global 
-C       array global_sf.
+C       Appends field value corresponding to open boundary points to final global array global_ob.
+C       Use values of global_indices to extract value in lookup_table at position of value of global_indices.
+C       Value in lookup_table used to identify position of current point on open boundary.
+C       Store field value at position in final global array global_ob.
+C       NOTE: for details on lookup table and global indices, look at diagnostics_ob_init_fixed.F
 
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "EESUPPORT.h"
 #include "DIAGNOSTICS_OB.h"
 
-         REAL*8 sf_values(sNx*sNy)
+         REAL*8 sf_values(sNx+sNy)
          INTEGER num_valid, i, sf_index, sf_id, pid
          INTEGER, PARAMETER :: print_debug = 0
+C------------------------------------------------------------------------------|
+C------------------------------------------------------------------------------|
+         sf_index = 1
+         num_valid = sf_numPnts_allproc(sf_id,pid+1)
 
-C----&------------------------------------------------------------------xxxxxxx|
-C----&------------------------------------------------------------------xxxxxxx|
-         ob_index = 1
-         num_valid = sf_numPnts_allproc(ob_id,pid+1)
 
          do i=1, num_valid
-C          Extracting sf_index from lookup table using global index for SF point i in process pid
+C          Extracting sf_index from lookup table using global index for OB point i in process pid
            sf_index = sf_lookup_table(sf_id,
      &                 sf_sub_glo_indices_allproc(sf_id,pid+1,i))
-C          Inserting time-averaged field value on SF point i in index sf_index of the final array, global_SF
+C          Inserting time-averaged field value on OB point i in index sf_index of the final array, global_SF
            global_SF(sf_index) = sf_values(i)
          end do
          if (print_debug .eq. 1) then
            print *,"global_SF shape",shape(global_SF)
            print *, "APPEND_SF_VALUE: global_SF:"
-           call PRINT_FLOAT_ARR(global_SF, (sNy*sNx)*(nPx*nPy))
+           call PRINT_FLOAT_ARR(global_SF, (sNy+sNx)*(nPx*nPy))
          end if
 
        END
-C----&------------------------------------------------------------------xxxxxxx|
-C----&------------------------------------------------------------------xxxxxxx|
+C------------------------------------------------------------------------------|
+C------------------------------------------------------------------------------|
 
 
 
@@ -962,29 +928,28 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 
 
-
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
-
-       SUBROUTINE SF_PASS_RL_to_R8(bufferSF, sf_id, fld)
+       SUBROUTINE SF_PASS_RL_to_R8(bufferSF, sf_id,fld)
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "DIAGNOSTICS_OB.h"
 
-         REAL*8 bufferSF(sNx*sNy)
-         INTEGER sf_id, nDim, fld
-         INTEGER i,k
+         REAL*8 bufferSF(sNx + sNy)
+         INTEGER sf_id, fld
+         INTEGER i
          INTEGER, PARAMETER :: debug = 0
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
-
-          DO i=1, sNx*sNy
-            bufferSF(i) = subFieldOnMask_SFavg(sf_id,fld,i)
-          ENDDO
+           DO i=1, sNx+sNy
+             bufferSF(i) = subFieldOnMask_SFavg(sf_id,fld,i)
+           ENDDO
 
        END
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
+
+
 
 
 

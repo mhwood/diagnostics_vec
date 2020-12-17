@@ -127,12 +127,6 @@ C----&------------------------------------------------------------------xxxxxxx|
         nml_obFiles(j) = ' '
       ENDDO
 
-      DO j=1, nSF_mask
-        DO i=1, MAX_NFLDS
-          nml_fieldsSF(i,j) = ' '
-        ENDDO
-        nml_sfFiles(j) = ' '
-      ENDDO
 
       DO j=1, nOB_mask
         DO i=1, MAX_NFLDS
@@ -145,12 +139,21 @@ C----&------------------------------------------------------------------xxxxxxx|
         ob_nFlds3D(j) = 0
       ENDDO
 
+C ----  Surface section is here
+
+      DO j=1, nSF_mask
+        DO i=1, MAX_NFLDS
+          nml_fieldsSF(i,j) = ' '
+        ENDDO
+        nml_sfFiles(j) = ' '
+      ENDDO
+
+
       DO j=1, nSF_mask
         DO i=1, MAX_NFLDS
           sf_flds(i,j) = ' '
         ENDDO
         sf_fnames(j) = ' '
-        sf_nFlds(j) = 0
       ENDDO
 
 C----&------------------------------------------------------------------xxxxxxx|
@@ -207,6 +210,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 
       DO sf=1, nSF_mask
         sf_fnames(sf) = nml_sfFiles(sf)
+
         DO i=1, MAX_NFLDS
           sf_flds(i,sf) = nml_fieldsSF(i,sf)
           if (nml_fieldsSF(i,sf) .ne. ' ') then
@@ -227,62 +231,6 @@ C     This is temporary for now, assuming all of the information is present:
       endTime_ob = nml_endTime
       ob_filePrec = nml_filePrec
       combineMaskTimeLevels = nml_combMaskTimeLevels
-
-C     If startTime, endTime, and avgPeriod are not specified by user then:
-C      IF (nml_avgPeriod .eq. undefRL) then
-C        avgPeriod_ob = deltaTClock
-C      ELSE
-C        avgPeriod_ob = nml_avgPeriod
-C      ENDIF
-C
-C      IF (nml_startTime .eq. undefRL) then
-C        startTime_ob = startTime
-C      ELSE
-C        startTime_ob = nml_startTime
-C      ENDIF
-C
-C      IF (nml_endTime .eq. undefRL) then
-C        endTime_ob = endTime
-C      ELSE
-C        endTime_ob = nml_endTime
-C      ENDIF
-
-
-C----&------------------------------------------------------------------xxxxxxx|
-C     Check if any sea ice variables are provided; 
-C     if so, then check if sea ice package is turned on
-C     (sea ice fields: AREA, HEFF, HSNOW, UICE, VICE)
-C----&------------------------------------------------------------------xxxxxxx|
-
-C      DO ob=1, nOB_mask
-C        DO i=1, ob_nFlds2D(ob)
-C          if (ob_flds2D(i,ob) .eq. 'AREA') then
-C             check_pkg = .TRUE.
-C             exit
-C          else if (ob_flds2D(i,ob) .eq. 'HEFF') then
-C            check_pkg = .TRUE.
-C            exit
-C          else if (ob_flds2D(i,ob) .eq. 'HSNOW') then
-C            check_pkg = .TRUE.
-C            exit
-C          else if (ob_flds2D(i,ob) .eq. 'UICE') then
-C            check_pkg = .TRUE.
-C            exit
-C          else if (ob_flds2D(i,ob) .eq. 'VICE') then
-C            check_pkg = .TRUE.
-C            exit
-C          end if
-C        ENDDO
-C      ENDDO
-C
-C      IF (check_pkg) then
-C        IF (.NOT. useSEAICE ) then
-C        if pkg SEAICE is not used, print warning
-C         CALL PACKAGES_UNUSED_MSG( 'useSEAICE', ' ', ' ' )
-C        CALL ALL_PROC_DIE( myThid )
-C         STOP 'ABNORMAL END: S/R DIAG_OB: SEAICE PACKAGE NOT ACTIVATED'
-C        ENDIF
-C      ENDIF
 
 
 C----&------------------------------------------------------------------xxxxxxx|
