@@ -264,7 +264,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 CBOC 
        character*2 dir
        character*50 filename
-       real*4 bufferR4_2D((sNy+sNx)*(nPx*nPy))
+       real*4 bufferR4_2D((sNy*sNx)*(nPx*nPy))
        integer, parameter :: debug = 1
        logical exists
        integer LEN, i
@@ -566,7 +566,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 #include "DIAGNOSTICS_OB.h"
 
 C     !INPUT PARAMETERS:
-        real*4 bufferR4_2D((sNy+sNx)*(nPx*nPy))
+        real*4 bufferR4_2D((sNy*sNx)*(nPx*nPy))
         integer fld, sf_id
 
 C     !LOCAL VARIABLES:
@@ -577,13 +577,13 @@ C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 
 C        Initialize buffer arrays:
-       do i=1, (sNy+sNx)*(nPx*nPy)
+       do i=1, (sNy*sNx)*(nPx*nPy)
          bufferR4_2D(i) = 0.0
        enddo
 
 C        Set real*8 values to real*4
 
-       do i=1, (sNy+sNx)*(nPx*nPy)
+       do i=1, (sNy*sNx)*(nPx*nPy)
          bufferR4_2D(i) = global_SF(i)
        enddo
 

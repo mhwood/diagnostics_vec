@@ -23,6 +23,10 @@ C     Assign unique tags to all 2D, 3D, and SF fields for MPI_SEND
 #include "EESUPPORT.h"
 #include "PARAMS.h"
 #include "DYNVARS.h"
+#include "FFIELDS.h"
+#ifdef ALLOW_EXF
+#include "EXF_FIELDS.h"
+#endif
 #ifdef ALLOW_SEAICE
 #include "SEAICE_SIZE.h"
 #include "SEAICE.h"
@@ -168,7 +172,7 @@ C     Initialize tag number to 1. Tag number will be incrememted after each fiel
 C       Number of open boundary points for mask sf_id and process mpiMyId (added one because of fortran's indices starting from 1 )
         numValid = sf_numPnts_allproc(sf_id,mpiMyId+1)
 
-C      Looping through 2D fields first, if any.
+C      Looping through SF fields, if any.
        nFldsSF = sf_nFlds(sf_id)
        DO fldSF=1, nFldsSF
 
@@ -184,10 +188,12 @@ C          i,j indices with respect to process' sub mask for open boundary point
            i = sf_sub_local_ij(sf_id,1,loc_count)
 
 C          Comparing strings provided by user to fields in diagnostics_ob
+C          First part of list is all of the possible 2D surface fields
            IF (sf_flds(fldSF,sf_id) .eq. 'ETAN') then
             subFieldOnMask_SF(sf_id,fldSF,loc_count) = etaN(i,j,bi,bj)
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'ETAH') then
             subFieldOnMask_SF(sf_id,fldSF,loc_count) = etaH(i,j,bi,bj)
+C          Second part of list is all the 3D fields, which are extracted in the top depth cell
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'UVEL') then
              subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        uVel(i,j,1,bi,bj)
@@ -202,13 +208,93 @@ C          Comparing strings provided by user to fields in diagnostics_ob
      &                                        theta(i,j,1,bi,bj)
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SALT') then
               subFieldOnMask_SF(sf_id,fldSF,loc_count)=
-     &                                       salt(i,j,1,bi,bj)
+     &                                        salt(i,j,1,bi,bj)
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'GU') then
               subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        gU(i,j,1,bi,bj)
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'GV') then
               subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        gV(i,j,1,bi,bj)
+C          Third part of list is all the forcing fields
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'FU') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        fu(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'FV') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        fv(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'QNET') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        Qnet(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'QSW') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        Qsw(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'EMPMR') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        EmPmR(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SALTFLUX') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        saltFlux(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SST') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        SST(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SSS') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        SSS(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'LTCR') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                            lambdaThetaClimRelax(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'LSCR') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                            lambdaSaltClimRelax(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'PHITIDE2') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        phiTide2d(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'PLOAD') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        pLoad(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SICELOAD') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        sIceLoad(i,j,bi,bj)
+C          Fourth part of list encompasses variables from different packages
+C          Variables from the EXF package:
+#ifdef ALLOW_EXF
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'USTRESS') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        ustress(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'VSTRESS') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        vstress(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'HFLUX') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        hflux(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SFLUX') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        sflux(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SWFLUX') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        swflux(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'UWIND') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        uwind(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'VWIND') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        vwind(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'WSPEED') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        wspeed(i,j,bi,bj)
+#ifdef ALLOW_ATM_TEMP
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'EVAP') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        evap(i,j,bi,bj)
+
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'PRECIP') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        precip(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'RUNOFF') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        runoff(i,j,bi,bj)
+#endif
+#endif
            ENDIF
           ENDDO
          ENDDO
@@ -273,7 +359,7 @@ c        Total number of 3D fields
 C        Total number of SF fields
          nFldsSF = sf_nFlds(sf_id)
          DO fldSF=1, nFldsSF
-          DO i=1, sNx+sNy
+          DO i=1, sNx*sNy
            subFieldOnMask_SFavg(sf_id,fldSF,i) = 0.0
           ENDDO
          ENDDO
@@ -342,7 +428,7 @@ C----&------------------------------------------------------------------xxxxxxx|
       ENDDO
 
       DO sf_id=1, nSF_mask
-       DO i=1, sNx+sNy
+       DO i=1, sNx*sNy
         DO fldSF=1, sf_nFlds(sf_id)
          subFieldOnMask_SFavg(sf_id,fldSF,i)
      &                      = subFieldOnMask_SFavg(sf_id,fldSF,i)
@@ -404,7 +490,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 
         DO sf_id=1, nSF_mask
-          DO i=1, sNx+sNy
+          DO i=1, sNx*sNy
            DO fldSF=1, sf_nFlds(sf_id)
             subFieldOnMask_SFavg(sf_id,fldSF,i) =
      &              subFieldOnMask_SFavg(sf_id,fldSF,i)/nTimeSteps_ob

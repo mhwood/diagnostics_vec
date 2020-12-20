@@ -140,17 +140,17 @@ C------------------------------------------------------------------------------|
       _RL global_ob_mask(nOB_mask,Nx, Ny,nSx,nSy)
 
       _RL sf_subMask(nSF_mask,1-Olx:sNx+Olx,1-Oly:sNy+Oly,nSx,nSy)
-      INTEGER sf_sub_local_ij(nSF_mask, 2, sNx + sNy)
-      INTEGER sf_sub_glo_indices_allproc(nSF_mask, nPx*nPy, sNx + sNy)
+      INTEGER sf_sub_local_ij(nSF_mask, 2, sNx * sNy)
+      INTEGER sf_sub_glo_indices_allproc(nSF_mask, nPx*nPy, sNx * sNy)
       INTEGER sf_numPnts_allproc(nSF_mask, nPx*nPy)
-      _RL subFieldOnMask_SF(nSF_mask,MAX_NFLDS, sNx + sNy)
-      _RL subFieldOnMask_SFavg(nSF_mask,MAX_NFLDS, sNx + sNy)
+      _RL subFieldOnMask_SF(nSF_mask,MAX_NFLDS, sNx * sNy)
+      _RL subFieldOnMask_SFavg(nSF_mask,MAX_NFLDS, sNx * sNy)
       INTEGER sf_lookup_table(nSF_mask, Ny*Nx)
       _RL global_sf_mask(nSF_mask,Nx, Ny,nSx,nSy)
 
       REAL*8 global_ob2D((sNy+sNx)*(nPx*nPy))
       REAL*8 global_ob3D((sNy+sNx)*(nPx*nPy), Nr)
-      REAL*8 global_SF((sNy+sNx)*(nPx*nPy))
+      REAL*8 global_SF((sNy*sNx)*(nPx*nPy))
       _RL nTimeSteps_ob
       _RL time_passed
       INTEGER time_level

@@ -48,7 +48,7 @@ C     !LOCAL VARIABLES:
        INTEGER total_valid
        REAL*8 buffer2D(sNx+sNy)
        REAL*8 buffer3D(sNx+sNy, Nr)
-       REAL*8 bufferSF(sNx+sNy)
+       REAL*8 bufferSF(sNx*sNy)
 
        INTEGER, PARAMETER :: debug = 0
        INTEGER, PARAMETER :: print_debug = 0
@@ -184,7 +184,7 @@ C       Initializing local arrays
           ENDDO
         ENDDO
 
-        DO i=1,sNx+sNy
+        DO i=1,sNx*sNy
           bufferSF(i) = 0.0
         ENDDO
 
@@ -328,7 +328,7 @@ C             print *,bufferSF
             endif
 
 C           Send R8 array to master process
-            call MPI_SEND(bufferSF, sNx+sNy, MPI_REAL8, 0, tag,
+            call MPI_SEND(bufferSF, sNx*sNy, MPI_REAL8, 0, tag,
      &                    MPI_COMM_MODEL, ierror)
 
            ENDDO
@@ -592,7 +592,7 @@ C     myThid :: thread number
 C     myTime :: current time in model
       INTEGER fld, sf_id, myThid, myIter
       _RL myTime
-      REAL*8 bufferSF(sNx+sNy)
+      REAL*8 bufferSF(sNx*sNy)
 
       _RS dummyRS(1)
       INTEGER pid, status(MPI_STATUS_SIZE), ierror, tag
@@ -605,7 +605,7 @@ C     myTime :: current time in model
       common / local_var / total_valid
       common / mpi_var / status, ierror
 
-      DO i=1,sNx+sNy
+      DO i=1,sNx*sNy
         bufferSF(i) = 0.0
       ENDDO
 
@@ -665,7 +665,7 @@ C       If number of valid elements is greater than or equal to 1
           tag = sf_tags(sf_id, 1, fld)
 C         !MPI_RECV params: received_data, receive_count, receive_type, sender_ID, tag, comm, status, ierror
 C         Master process receiving time-averaged surface field values on SF points from process pid
-          call MPI_RECV(bufferSF, sNx+sNy, MPI_REAL8,
+          call MPI_RECV(bufferSF, sNx*sNy, MPI_REAL8,
      &                   pid, tag ,MPI_COMM_MODEL, status, ierror)
 
           if (recv_debug .eq. 1) then
@@ -849,7 +849,7 @@ C       NOTE: for details on lookup table and global indices, look at diagnostic
 #include "EESUPPORT.h"
 #include "DIAGNOSTICS_OB.h"
 
-         REAL*8 sf_values(sNx+sNy)
+         REAL*8 sf_values(sNx*sNy)
          INTEGER num_valid, i, sf_index, sf_id, pid
          INTEGER, PARAMETER :: print_debug = 0
 C------------------------------------------------------------------------------|
@@ -868,7 +868,7 @@ C          Inserting time-averaged field value on OB point i in index sf_index o
          if (print_debug .eq. 1) then
            print *,"global_SF shape",shape(global_SF)
            print *, "APPEND_SF_VALUE: global_SF:"
-           call PRINT_FLOAT_ARR(global_SF, (sNy+sNx)*(nPx*nPy))
+           call PRINT_FLOAT_ARR(global_SF, (sNy*sNx)*(nPx*nPy))
          end if
 
        END
@@ -935,13 +935,13 @@ C----&------------------------------------------------------------------xxxxxxx|
 #include "EEPARAMS.h"
 #include "DIAGNOSTICS_OB.h"
 
-         REAL*8 bufferSF(sNx + sNy)
+         REAL*8 bufferSF(sNx * sNy)
          INTEGER sf_id, fld
          INTEGER i
          INTEGER, PARAMETER :: debug = 0
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
-           DO i=1, sNx+sNy
+           DO i=1, sNx*sNy
              bufferSF(i) = subFieldOnMask_SFavg(sf_id,fld,i)
            ENDDO
 

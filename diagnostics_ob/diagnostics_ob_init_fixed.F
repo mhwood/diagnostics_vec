@@ -42,17 +42,17 @@ CEOP
 C----&------------------------------------------------------------------xxxxxxx|
 
 
-#ifdef ALLOW_MNC
-      IF (useMNC) THEN
-        CALL DIAGNOSTICS_OB_MNC_INIT( myThid )
-      ENDIF
-#endif /* ALLOW_MNC */
-
-#ifdef ALLOW_DIAGNOSTICS
-      IF ( useDiagnostics ) THEN
-        CALL DIAGNOSTICS_OB_INIT( myThid )
-      ENDIF
-#endif
+C#ifdef ALLOW_MNC
+C      IF (useMNC) THEN
+C        CALL DIAGNOSTICS_OB_MNC_INIT( myThid )
+C      ENDIF
+C#endif /* ALLOW_MNC */
+C
+C#ifdef ALLOW_DIAGNOSTICS
+C      IF ( useDiagnostics ) THEN
+C        CALL DIAGNOSTICS_OB_INIT( myThid )
+C      ENDIF
+C#endif
 
 C----&------------------------------------------------------------------xxxxxxx|
 C     Initialize diagnostics_ob COMMON block variables:
@@ -128,7 +128,7 @@ C     This is in the initialization of the boundary variables
 
 C     This is in the initialization of the surface variables
 
-      DO i=1, (sNy+sNx)*(nPx*nPy)
+      DO i=1, (sNy*sNx)*(nPx*nPy)
         global_SF(i) = 0.0
       ENDDO
 
@@ -143,12 +143,12 @@ C     This is in the initialization of the surface variables
         ENDDO
 
         DO i=1,2
-          DO j=1, sNx+sNy
+          DO j=1, sNx*sNy
             sf_sub_local_ij(sf_id, i, j) = 0
           ENDDO
         ENDDO
 
-        DO i=1, sNx+sNy
+        DO i=1, sNx*sNy
           DO fld=1, MAX_NFLDS
             subFieldOnMask_SF(sf_id, fld, i) = 0.0
             subFieldOnMask_SFavg(sf_id, fld, i) = 0.0
@@ -173,7 +173,7 @@ C     This is in the initialization of the surface variables
 
         DO i=1, nPx*nPy
           sf_numPnts_allproc(sf_id, i) = 0
-          DO j=1, sNx+sNy
+          DO j=1, sNx*sNy
             sf_sub_glo_indices_allproc(sf_id,i,j) = 0
           ENDDO
         ENDDO
@@ -618,7 +618,7 @@ C     !LOCAL VARIABLES:
       INTEGER pid, ob_id, i, status(MPI_STATUS_SIZE), ierror
       INTEGER sf_id
       INTEGER g_ob_indices(sNx+sNy)
-      INTEGER g_sf_indices(sNx+sNy)
+      INTEGER g_sf_indices(sNx*sNy)
       INTEGER num_pts
 CEOP
 C----&------------------------------------------------------------------xxxxxxx|
@@ -689,7 +689,7 @@ C      the count of the sf points
             print *,"INIT_FIXED: BEFORE sf_sub_glo_indices_allproc",
      &              sf_sub_glo_indices_allproc(sf_id,mpiMyId+1,:)
             call MPI_SEND(sf_sub_glo_indices_allproc(sf_id,mpiMyId+1,:),
-     &             sNx+sNy, MPI_INT,0, sf_id, MPI_COMM_MODEL, ierror)
+     &             sNx*sNy, MPI_INT,0, sf_id, MPI_COMM_MODEL, ierror)
             call MPI_SEND(sf_numPnts_allproc(sf_id,mpiMyId+1),
      &             1, MPI_INT,0, sf_id*100, MPI_COMM_MODEL, ierror)
           ENDDO
@@ -701,12 +701,12 @@ C      and then the count of SF points from child process pid
         IF (mpiMyId .eq. 0) then
           DO pid=1, nPx*nPy-1
             DO sf_id=1, nSF_mask
-              call MPI_RECV(g_sf_indices, sNx+sNy, MPI_INT,
+              call MPI_RECV(g_sf_indices, sNx*sNy, MPI_INT,
      &                   pid, sf_id ,MPI_COMM_MODEL, status, ierror)
               call MPI_RECV(num_pts, 1, MPI_INT,
      &                   pid, sf_id*100 ,MPI_COMM_MODEL, status, ierror)
 
-              DO i=1, sNx+sNy
+              DO i=1, sNx*sNy
                sf_sub_glo_indices_allproc(sf_id,pid+1,i) 
      &                   = g_sf_indices(i)
               ENDDO
