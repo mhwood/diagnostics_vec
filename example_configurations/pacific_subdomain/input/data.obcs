@@ -1,0 +1,65 @@
+# Open-boundaries
+
+ &OBCS_PARM01
+
+# This flag turns off checking and fixing problematic topography across 
+# open boundaries.
+ OBCSfixTopo=.FALSE.,
+
+# these lines make the boundary arrays at the edges
+ OB_singleIeast  = -1,
+ OB_singleIwest  =  1,
+ OB_singleJnorth = -1,
+ OB_singleJsouth =  1,
+ useOBCSprescribe = .TRUE.,
+
+# The input files are named with convention 
+# OBXyFile = '<file name>.bin'
+#   where
+#     X is N(orth), S(outh), E(ast), W(est)
+#   and y is
+#      t(emperature), s(salinity), eta (sea surface height),
+#      u(-velocity), v(-velocity), w(-velocity), a (seaice area), 
+#      h (sea ice thickness), sn (snow thickness), sl (sea ice salinity)
+
+#SENW
+# The southern boundary was the first one called in diagnostics_ob
+OBStFile = 'MASK_OB_01_THETA.bin'
+OBSsFile = 'MASK_OB_01_SALT.bin'
+OBSuFile = 'MASK_OB_01_UVEL.bin'
+OBSvFile = 'MASK_OB_01_VVEL.bin'
+#OBSwFile = 'MASK_OB_01_WVEL.bin'
+
+# The eastern boundary was the seconf one called in diagnostics_ob
+OBEtFile = 'MASK_OB_02_THETA.bin'
+OBEsFile = 'MASK_OB_02_SALT.bin'
+OBEuFile = 'MASK_OB_02_UVEL.bin'
+OBEvFile = 'MASK_OB_02_VVEL.bin'
+#OBEwFile = 'MASK_OB_02_WVEL.bin'
+
+# The northern boundary was the first one called in diagnostics_ob
+OBNtFile = 'MASK_OB_03_THETA.bin'
+OBNsFile = 'MASK_OB_03_SALT.bin'
+OBNuFile = 'MASK_OB_03_UVEL.bin'
+OBNvFile = 'MASK_OB_03_VVEL.bin'
+#OBNwFile = 'MASK_OB_03_WVEL.bin'
+
+# The western boundary was the first one called in diagnostics_ob
+OBWtFile = 'MASK_OB_04_THETA.bin'
+OBWsFile = 'MASK_OB_04_SALT.bin'
+OBWuFile = 'MASK_OB_04_UVEL.bin'
+OBWvFile = 'MASK_OB_04_VVEL.bin'
+#OBWwFile = 'MASK_OB_04_WVEL.bin'
+
+# the monitor frequency is set to the same averaging period as diagnostics_ob
+ OBCS_monitorFreq= 86400.,
+ OBCS_monSelect = 1,
+
+# turned off balancing temporarily
+# useOBCSbalance = .FALSE.,
+# this flag tests balancing the surface flux
+# OBCSbalanceSurf = .TRUE.,
+# all adjustments are made through the northern boundary
+# OBCS_balanceFacN = 1.,
+ &
+

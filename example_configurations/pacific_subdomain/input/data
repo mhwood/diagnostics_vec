@@ -20,7 +20,7 @@
  allowFreezing=.TRUE.,
  exactConserv=.TRUE.,
  useRealFreshWaterFlux=.TRUE.,
- useCDscheme=.TRUE.,
+# useCDscheme=.TRUE.,
 # turn on looped cells
  hFacMin=.05,
  hFacMindr=50.,
@@ -42,19 +42,18 @@
 # startTime =          0.,
 # endTime   = 3110400000.,
 # 50 years of integration are used to demonstrate the diagnostics_ob package
-# traditional output is dumped every 5 years
 # startTime =          0.,
 # endTime   = 1576800000.,
 # pChkptFreq= 157680000.,
 # dumpFreq=   157680000.,
-# 5 years of integration are used to test the diagnostics_ob package
-# with output dumped every 1 year
+# 5 years of integration are used to test the run
+# with output dumped every 0.2 year (60*60*24*73)
  startTime =          0.,
  endTime   = 157680000.,
- pChkptFreq= 31536000.,
- dumpFreq=   31536000.,
+ pChkptFreq= 6307200.,
+ dumpFreq=   6307200.,
  deltaTmom = 1800.,
- tauCD =     321428.,
+# tauCD =     321428.,
  deltaTtracer= 86400.,
  deltaTClock = 86400.,
  deltaTfreesurf= 86400.,
@@ -76,23 +75,24 @@
  delR= 50.,  70., 100., 140., 190.,
       240., 290., 340., 390., 440.,
       490., 540., 590., 640., 690.,
- ygOrigin=-80.,
+ ygOrigin=-4.,
+ xgOrigin=112.,
  dySpacing=4.,
  dxSpacing=4.,
  &
 
 # Input datasets
  &PARM05
- bathyFile=      'bathymetry.bin',
- hydrogThetaFile='lev_t.bin',
- hydrogSaltFile= 'lev_s.bin',
- zonalWindFile=  'trenberth_taux.bin',
- meridWindFile=  'trenberth_tauy.bin',
- thetaClimFile=  'lev_sst.bin',
- saltClimFile=   'lev_sss.bin',
- surfQnetFile=   'ncep_qnet.bin',
- the_run_name=   'global_oce_latlon',
+ bathyFile=      'bathymetry_pacific.bin',
+ hydrogThetaFile='lev_t_pacific.bin',
+ hydrogSaltFile= 'lev_s_pacific.bin',
+ zonalWindFile=  'trenberth_taux_pacific.bin',
+ meridWindFile=  'trenberth_tauy_pacific.bin',
+ thetaClimFile=  'lev_sst_pacific.bin',
+ saltClimFile=   'lev_sss_pacific.bin',
+ surfQnetFile=   'ncep_qnet_pacific.bin',
+ the_run_name=   'pacific_subdomain',
 # fresh water flux is turned on, comment next line to it turn off
 # (maybe better with surface salinity restoring)
- EmPmRFile=      'ncep_emp.bin',
+ EmPmRFile=      'ncep_emp_pacific.bin',
  &
