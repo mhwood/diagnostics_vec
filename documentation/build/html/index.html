@@ -1,0 +1,545 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to Diagnostics_OB&#39;s documentation! &mdash; Diagnostics_OB latest (pre-alpha) documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home" alt="Documentation Home"> Diagnostics_OB
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Welcome to Diagnostics_OB's documentation!</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li><a class="reference internal" href="#motivation">Motivation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#key-subroutines-and-parameters">Key Subroutines and Parameters</a></li>
+<li><a class="reference internal" href="#usage-notes">Usage Notes</a><ul>
+<li><a class="reference internal" href="#generating-sampling-masks">Generating Sampling Masks</a></li>
+<li><a class="reference internal" href="#specifying-parameters-in-data-diagnostics-ob">Specifying parameters in data.diagnostics_ob</a><ul>
+<li><a class="reference internal" href="#example-data-diagnostics-ob-parameter-file">Example <code class="docutils literal notranslate"><span class="pre">data.diagnostics_ob</span></code> parameter file</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#available-diagnostics">Available diagnostics</a><ul>
+<li><a class="reference internal" href="#standard-diagnostics">Standard Diagnostics</a></li>
+<li><a class="reference internal" href="#external-forcing-diagnostics">External Forcing Diagnostics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Diagnostics_OB</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Welcome to Diagnostics_OB's documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-diagnostics-ob-s-documentation">
+<h1>Welcome to Diagnostics_OB's documentation!<a class="headerlink" href="#welcome-to-diagnostics-ob-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This package is designed to output diagnostics on &quot;slices&quot; within the model domain.</p>
+<div class="section" id="motivation">
+<h3>Motivation<a class="headerlink" href="#motivation" title="Permalink to this headline">¶</a></h3>
+<p>The development of diagnostics_ob is aimed at nested-resolution modeling: an increase in spatial resolution necessitates an increase in temporal resolution to ensure convergence, yet boundary conditions are only required on a small portion of the full domain.</p>
+</div>
+</div>
+<div class="section" id="key-subroutines-and-parameters">
+<h2>Key Subroutines and Parameters<a class="headerlink" href="#key-subroutines-and-parameters" title="Permalink to this headline">¶</a></h2>
+<p>The storage and output of subdiagnostics is facilitated by a &quot;lookup table&quot; which assigns the horizontal locations of grid cells in the global domain an index within the tile in which they are processed. The lookup table is generated in the subroutine XXX.F. Subsequently, the lookup table is referenced at each model time step to update diagnostic fields and, at user-defined intervals, output averaged fields at user-specified locations. The key subroutines to generate the lookup table, and output the average subdiagnostics are listed below.</p>
+<p><a class="reference external" href="https://github.com/mhwood/diagnostics_ob/blob/main/diagnostics_ob/diagnostics_ob_init_fixed.F">diagnostics_ob_init_fixed.F</a></p>
+</div>
+<div class="section" id="usage-notes">
+<h2>Usage Notes<a class="headerlink" href="#usage-notes" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>To use the <code class="docutils literal notranslate"><span class="pre">diagnostics_ob</span></code> package, the following steps must be taken:</dt><dd><ol class="arabic simple">
+<li><p>Enable the package in <code class="docutils literal notranslate"><span class="pre">packages.conf</span></code></p></li>
+<li><p>Turning the <code class="docutils literal notranslate"><span class="pre">useDiagnostics_ob</span></code> flag in <code class="docutils literal notranslate"><span class="pre">data.pkg</span></code> to <code class="docutils literal notranslate"><span class="pre">.TRUE.</span></code></p></li>
+<li><p>Generate masks where subdiagnostics will be generated</p></li>
+<li><p>Generate a <code class="docutils literal notranslate"><span class="pre">data.diagnostics_ob</span></code> parameter file</p></li>
+</ol>
+</dd>
+</dl>
+<p>The generation of the sampling masks and the <code class="docutils literal notranslate"><span class="pre">data.diagnostics_ob</span></code> parameter file are described below.</p>
+<div class="section" id="generating-sampling-masks">
+<h3>Generating Sampling Masks<a class="headerlink" href="#generating-sampling-masks" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">diagnostics_ob</span></code> routines anticipates masks which sequentially enumerate sample points within a 2D domain of the same size as the full model domain (i.e. <span class="math notranslate nohighlight">\(N_x \times N_y\)</span>). The mask is zero everywhere except for the points of interest.</p>
+<p>For example, in domain of size <span class="math notranslate nohighlight">\(N_x=90, N_y=40\)</span>, the following python script generates a horizontal sample mask along
+<span class="math notranslate nohighlight">\(y=5\)</span> and <span class="math notranslate nohighlight">\(x\in[10,30]\)</span></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">40</span><span class="p">,</span><span class="mi">90</span><span class="p">))</span>
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">31</span><span class="p">):</span>
+    <span class="n">mask</span><span class="p">[</span><span class="mi">5</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">counter</span>
+    <span class="n">counter</span><span class="o">+=</span><span class="mi">1</span>
+<span class="n">mask</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;&gt;f4&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tofile</span><span class="p">(</span><span class="s1">&#39;path/to/input/dir/lateral_mask.bin&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This mask would be used to sample the lateral variables, as listed below.</p>
+<p>Similarly, the following script generates a surface sample mask within <span class="math notranslate nohighlight">\(\{(x,y)|x\in[10,30], y\in[5,10]\}\)</span></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">40</span><span class="p">,</span><span class="mi">90</span><span class="p">))</span>
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">31</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">counter</span>
+        <span class="n">counter</span><span class="o">+=</span><span class="mi">1</span>
+<span class="n">mask</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;&gt;f4&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tofile</span><span class="p">(</span><span class="s1">&#39;path/to/input/dir/surface_mask.bin&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This mask would be used to sample the surface variables, as listed below.</p>
+</div>
+<div class="section" id="specifying-parameters-in-data-diagnostics-ob">
+<h3>Specifying parameters in data.diagnostics_ob<a class="headerlink" href="#specifying-parameters-in-data-diagnostics-ob" title="Permalink to this headline">¶</a></h3>
+<dl>
+<dt>Within the data.diagnostics_ob file, the following parameters must be specified:</dt><dd><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>nml_avgPeriod</p></td>
+<td><p>averaging period duration</p></td>
+</tr>
+<tr class="row-odd"><td><p>nml_startTime</p></td>
+<td><p>start time of output</p></td>
+</tr>
+<tr class="row-even"><td><p>nml_endTime</p></td>
+<td><p>end time of output</p></td>
+</tr>
+<tr class="row-odd"><td><p>nml_boundaryFiles</p></td>
+<td><p>filenames of lateral boundary masks</p></td>
+</tr>
+<tr class="row-even"><td><p>nml_surfaceFiles</p></td>
+<td><p>filenames of surface boundary mask</p></td>
+</tr>
+<tr class="row-odd"><td><p>nml_fields2D</p></td>
+<td><p>field names for 2D ocean state/flux variables for each lateral boundary (e.g. ETAN)</p></td>
+</tr>
+<tr class="row-even"><td><p>nml_fields3D</p></td>
+<td><p>field names for 3D ocean state/flux variables for each lateral boundary (e.g. THETA)</p></td>
+</tr>
+<tr class="row-odd"><td><p>nml_levels3D</p></td>
+<td><p>depths of 3D fields for each open boundary (starting from surface)</p></td>
+</tr>
+<tr class="row-even"><td><p>nml_fieldsSurf</p></td>
+<td><p>field names for surface ocean state/flux variables for each surface boundary (e.g. QNET)</p></td>
+</tr>
+<tr class="row-odd"><td><p>nml_filePrec</p></td>
+<td><p>output file real precision (32 or 64 bits, default is 64)</p></td>
+</tr>
+<tr class="row-even"><td><p>nml_combMaskTimeLevels</p></td>
+<td><p>option to combine output fields into a single file (default is TRUE)</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<div class="section" id="example-data-diagnostics-ob-parameter-file">
+<h4>Example <code class="docutils literal notranslate"><span class="pre">data.diagnostics_ob</span></code> parameter file<a class="headerlink" href="#example-data-diagnostics-ob-parameter-file" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">DIAG_OB_INPUT_VARS</span>
+
+<span class="n">nml_avgPeriod</span> <span class="o">=</span> <span class="mf">86400.</span><span class="p">,</span>
+<span class="n">nml_startTime</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="n">nml_endTime</span> <span class="o">=</span> <span class="mf">1576800000.</span><span class="p">,</span>
+
+<span class="n">nml_obFiles</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;boundary_mask_south.bin&#39;</span><span class="p">,</span>
+<span class="n">nml_obFiles</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;boundary_mask_east.bin&#39;</span><span class="p">,</span>
+<span class="n">nml_obFiles</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;boundary_mask_north.bin&#39;</span><span class="p">,</span>
+<span class="n">nml_obFiles</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;boundary_mask_west.bin&#39;</span><span class="p">,</span>
+
+<span class="n">nml_sfFiles</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;surface_mask.bin&#39;</span><span class="p">,</span>
+
+<span class="n">nml_fields2D</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;ETAN    &#39;</span><span class="p">,</span>
+<span class="n">nml_fields2D</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;ETAN    &#39;</span><span class="p">,</span>
+<span class="n">nml_fields2D</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;ETAN    &#39;</span><span class="p">,</span>
+<span class="n">nml_fields2D</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;ETAN    &#39;</span><span class="p">,</span>
+
+<span class="n">nml_fields3D</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;THETA   &#39;</span><span class="p">,</span><span class="s1">&#39;SALT   &#39;</span><span class="p">,</span><span class="s1">&#39;UVEL    &#39;</span><span class="p">,</span><span class="s1">&#39;VVEL    &#39;</span><span class="p">,</span><span class="s1">&#39;WVEL    &#39;</span><span class="p">,</span>
+<span class="n">nml_levels3D</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span>   <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span>
+<span class="n">nml_fields3D</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;THETA   &#39;</span><span class="p">,</span><span class="s1">&#39;SALT   &#39;</span><span class="p">,</span><span class="s1">&#39;UVEL    &#39;</span><span class="p">,</span><span class="s1">&#39;VVEL    &#39;</span><span class="p">,</span><span class="s1">&#39;WVEL    &#39;</span><span class="p">,</span>
+<span class="n">nml_levels3D</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span>   <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span>
+<span class="n">nml_fields3D</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;THETA   &#39;</span><span class="p">,</span><span class="s1">&#39;SALT   &#39;</span><span class="p">,</span><span class="s1">&#39;UVEL    &#39;</span><span class="p">,</span><span class="s1">&#39;VVEL    &#39;</span><span class="p">,</span><span class="s1">&#39;WVEL    &#39;</span><span class="p">,</span>
+<span class="n">nml_levels3D</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="o">=</span>   <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span>
+<span class="n">nml_fields3D</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;THETA   &#39;</span><span class="p">,</span><span class="s1">&#39;SALT   &#39;</span><span class="p">,</span><span class="s1">&#39;UVEL    &#39;</span><span class="p">,</span><span class="s1">&#39;VVEL    &#39;</span><span class="p">,</span><span class="s1">&#39;WVEL    &#39;</span><span class="p">,</span>
+<span class="n">nml_levels3D</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span> <span class="o">=</span>   <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span>
+
+<span class="n">nml_fieldsSF</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="s1">&#39;FU      &#39;</span><span class="p">,</span><span class="s1">&#39;FV      &#39;</span><span class="p">,</span><span class="s1">&#39;SST     &#39;</span><span class="p">,</span><span class="s1">&#39;SSS     &#39;</span><span class="p">,</span><span class="s1">&#39;QNET    &#39;</span><span class="p">,</span><span class="s1">&#39;EMPMR   &#39;</span><span class="p">,</span>
+
+<span class="n">nml_filePrec</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+<span class="n">nml_combMaskTimeLevels</span> <span class="o">=</span> <span class="o">.</span><span class="n">TRUE</span><span class="o">.</span><span class="p">,</span>
+<span class="o">&amp;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="available-diagnostics">
+<h3>Available diagnostics<a class="headerlink" href="#available-diagnostics" title="Permalink to this headline">¶</a></h3>
+<p>The following lists of variables are supported by the diagnostics_ob package.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Variables listed as <cite>Lateral (1D)</cite>, <cite>Lateral (2D)</cite>, and <cite>Surface (2D)</cite> are requested via the <code class="docutils literal notranslate"><span class="pre">nml_fields2D</span></code>, <code class="docutils literal notranslate"><span class="pre">nml_fields3D</span></code> and <code class="docutils literal notranslate"><span class="pre">nml_fieldsSF</span></code> lists in the <code class="docutils literal notranslate"><span class="pre">data.diagnostics_ob</span></code> file.</p>
+</div>
+<div class="section" id="standard-diagnostics">
+<h4>Standard Diagnostics<a class="headerlink" href="#standard-diagnostics" title="Permalink to this headline">¶</a></h4>
+<dl>
+<dt>The following diagnostics are standard model variables and are available in any configuration.</dt><dd><table class="docutils align-default">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 12%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Boundary Type</p></th>
+<th class="head"><p>Variable</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>Lateral (1D)</cite></p></td>
+<td><p>ETAN</p></td>
+<td><p>surface height anomaly</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>ETAH</p></td>
+<td><p>surface height anomaly</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>Lateral (2D)</cite></p></td>
+<td><p>THETA</p></td>
+<td><p>potential temperature (deg. C)</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>SALT</p></td>
+<td><p>salinity (psu)</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>UVEL</p></td>
+<td><p>zonal velocity (m/s)</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>VVEL</p></td>
+<td><p>meridional velocity (m/s)</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>WVEL</p></td>
+<td><p>vertical velocity (m/s)</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>GU</p></td>
+<td><p>()</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>GV</p></td>
+<td><p>()</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>Surface (2D)</cite></p></td>
+<td><p>FU</p></td>
+<td><p>zonal wind stress ()</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>FV</p></td>
+<td><p>meridional wind stress ()</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>QNET</p></td>
+<td><p>net upward surface heat flux ()</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>QSW</p></td>
+<td><p>net upward shortwave radiation</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>EMPMR</p></td>
+<td><p>net upward freshwater flux</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>SALTFLUX</p></td>
+<td><p>net upward salt flux</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>SST</p></td>
+<td><p>sea surface temperature</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>SSS</p></td>
+<td><p>sea surface salinity</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>LTCR</p></td>
+<td><p>inverse time scale for temperature relaxation</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>LSCR</p></td>
+<td><p>inverse time scale for salinity relaxation</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>PHITIDE2</p></td>
+<td><p>time-dependent geopotential anomaly</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>PLOAD</p></td>
+<td><p>atmospheric pressure anomaly</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>SICELOAD</p></td>
+<td><p>sea-ice loading</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+</div>
+<div class="section" id="external-forcing-diagnostics">
+<h4>External Forcing Diagnostics<a class="headerlink" href="#external-forcing-diagnostics" title="Permalink to this headline">¶</a></h4>
+<dl>
+<dt>The following diagnostics are available in configurations with the use of <cite>pkg/exf</cite>.</dt><dd><table class="docutils align-default">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 12%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Boundary Type</p></th>
+<th class="head"><p>Variable</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>Surface (2D)</cite></p></td>
+<td><p>USTRESS</p></td>
+<td><p>zonal surface wind stress ()</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>VSTRESS</p></td>
+<td><p>meridional surface wind stress ()</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>HFLUX</p></td>
+<td><p>net upward surface heat flux ()</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>SFLUX</p></td>
+<td><p>net upward freshwater flux</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>SWFLUX</p></td>
+<td><p>net upward fshortwave radiation</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>UWIND</p></td>
+<td><p>surface zonal wind velocity</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>VWIND</p></td>
+<td><p>surface meridional wind velocity</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>WSPEED</p></td>
+<td><p>surface wind speed</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>EVAP</p></td>
+<td><p>evaporation</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>PRECIP</p></td>
+<td><p>total precipitation</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>RUNOFF</p></td>
+<td><p>river and glacier runoff</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Ian Fenty, April Shin, Michael Wood
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
