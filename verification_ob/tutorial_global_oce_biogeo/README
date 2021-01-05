@@ -1,0 +1,13 @@
+This verification for the diagnostics_ob package mirrors the standard MITgcm verification procedure.
+
+To run the verification for this configuration, run the following steps:
+ - setup.sh
+     - link files from verification/tutorial_global_oce_biogeo
+ - build.sh
+     - standard build steps for MITgcm models using MPI (edit with your system's opt file)
+ - run.sh
+     - standard run steps for MITgcm models using MPI
+
+
+To return the verification back to its initial state, use reset.sh
+
