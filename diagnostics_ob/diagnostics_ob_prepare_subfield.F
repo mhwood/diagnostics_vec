@@ -24,13 +24,21 @@ C     Assign unique tags to all 2D, 3D, and SF fields for MPI_SEND
 #include "PARAMS.h"
 #include "DYNVARS.h"
 #include "FFIELDS.h"
+
 #ifdef ALLOW_EXF
 #include "EXF_FIELDS.h"
 #endif
+
 #ifdef ALLOW_SEAICE
 #include "SEAICE_SIZE.h"
 #include "SEAICE.h"
 #endif
+
+#ifdef ALLOW_PTRACERS
+#include "PTRACERS_SIZE.h"
+#include "PTRACERS_FIELDS.h"
+#endif
+
 #include "DIAGNOSTICS_OB.h"
 
 
@@ -43,6 +51,7 @@ C     Assign unique tags to all 2D, 3D, and SF fields for MPI_SEND
       INTEGER fld2D, fld3D
       INTEGER fldSF
       INTEGER, PARAMETER :: print_debug = 0
+      INTEGER, PARAMETER :: debug = 1
 
 C----&------------------------------------------------------------------xxxxxxx|
 
@@ -132,6 +141,71 @@ C          Comparing strings provided by user to fields in diagnostics_ob
             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'GV') then
               subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
      &                                        gV(i,j,k,bi,bj)
+            
+C This part is for variables from the ptracer pkg (assuming only up to 20 tracers)
+#ifdef ALLOW_PTRACERS
+
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE01') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,1)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE02') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,2)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE03') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,3)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE04') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,4)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE05') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,5)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE06') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,6)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE07') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,7)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE08') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,8)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE09') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,9)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE10') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,10)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE11') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,11)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE12') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,12)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE13') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,13)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE14') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,14)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE15') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,15)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE16') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,16)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE17') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,17)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE18') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,18)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE19') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,19)
+             ELSE IF (ob_flds3D(fld3D,ob_id) .eq. 'PTRACE20') then
+             subFieldOnMask_3D(ob_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,20)
+#endif
             ENDIF
            ENDDO
           ENDDO
@@ -255,6 +329,7 @@ C          Third part of list is all the forcing fields
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SICELOAD') then
              subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        sIceLoad(i,j,bi,bj)
+
 C          Fourth part of list encompasses variables from different packages
 C          Variables from the EXF package:
 #ifdef ALLOW_EXF
@@ -295,6 +370,31 @@ C          Variables from the EXF package:
      &                                        runoff(i,j,bi,bj)
 #endif
 #endif
+
+
+
+
+C Fifth part is for variables from the sea ice package
+#ifdef ALLOW_SEAICE
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'UICE') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        UICE(i,j,bi,bj)
+
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'VICE') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        VICE(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'AREA') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        AREA(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'HEFF') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        HEFF(i,j,bi,bj)
+
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'HSNOW') then
+             subFieldOnMask_SF(sf_id,fldSF,loc_count) =
+     &                                        HSNOW(i,j,bi,bj)
+#endif
+
            ENDIF
           ENDDO
          ENDDO
