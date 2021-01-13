@@ -1,8 +1,8 @@
-# Packages (lines beginning "#" are comments)
+# Packages
  &PACKAGES
   useEXF         = .TRUE.,
   useCAL         = .TRUE.,
   useGMRedi      = .TRUE.,
   useDiagnostics = .TRUE.,
-  useOBCS        = .TRUE.,
+  useDiagnostics_ob = .TRUE.,
  &

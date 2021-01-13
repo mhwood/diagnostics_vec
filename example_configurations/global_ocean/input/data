@@ -8,9 +8,9 @@
  sRef = 15*35.,
  viscAr=1.E-3,
  viscAh=5.E5,
- diffKhT=0.,
+ diffKhT=0.0,
  diffKrT=3.E-5,
- diffKhS=0.,
+ diffKhS=0.0,
  diffKrS=3.E-5,
  rhoConst=1035.,
  rhoConstFresh=1000.,
@@ -45,21 +45,17 @@
 # 100 years of integration will yield a reasonable flow field
 # startTime =          0.,
 # endTime   = 3110400000.,
-# 50 years of integration are used to demonstrate the diagnostics_ob package
+# 25 years of integration are used to demonstrate the diagnostics_ob package
+# traditional output is dumped every 1 year
 # startTime =          0.,
-# endTime   = 1576800000.,
+# endTime   = 788400000.,
 # pChkptFreq= 157680000.,
-# dumpFreq=   157680000.,
-# 5 years of integration are used to test the run
-# with output dumped every 0.2 year (60*60*24*73)
-# startTime = 0.,
-# endTime   = 157680000.,
-# pChkptFreq= 6307200.,
-# dumpFreq=   6307200.,
-# test with 364 one-day time steps, dumping every 0.2 yrs
- startTime = 0.,
- endTime   = 31536000.,
- pChkptFreq= 31536000.,
+# dumpFreq=   31536000.,
+# 1 year + 1 day of integration are used to test the diagnostics_ob package
+# with output dumped every 0.2 year
+ startTime =          0.,
+ endTime   = 31622400.,
+ pChkptFreq= 31622400.,
  dumpFreq=   6307200.,
  deltaTmom = 1800.,
 # tauCD =     321428.,
@@ -68,7 +64,8 @@
  deltaTfreesurf= 86400.,
  abEps = 0.1,
 # taveFreq=   864000.,
- monitorFreq=1.,
+ monitorFreq=0.,
+# This is all now handled by exf:
 # 2 months restoring timescale for temperature
 # tauThetaClimRelax=  5184000.,
 # 6 months restoring timescale for salinity
@@ -78,30 +75,21 @@
 # externForcingCycle=31104000.,
  &
 
+
 # Gridding parameters
  &PARM04
  usingSphericalPolarGrid=.TRUE.,
- delR= 50.,  70., 100., 140., 190.,
-      240., 290., 340., 390., 440.,
-      490., 540., 590., 640., 690.,
- ygOrigin=-4.,
- xgOrigin=110.,
+ delR= 50., 70., 100., 140., 190.,
+       240., 290., 340., 390., 440.,
+       490., 540., 590., 640., 690.,
+ ygOrigin=-80.,
  dySpacing=4.,
  dxSpacing=4.,
  &
 
 # Input datasets
  &PARM05
- bathyFile=      'bathymetry_pacific.bin',
- hydrogThetaFile='lev_t_pacific.bin',
- hydrogSaltFile= 'lev_s_pacific.bin',
-# zonalWindFile=  'trenberth_taux_pacific.bin',
-# meridWindFile=  'trenberth_tauy_pacific.bin',
-# thetaClimFile=  'lev_sst_pacific.bin',
-# saltClimFile=   'lev_sss_pacific.bin',
-# surfQnetFile=   'ncep_qnet_pacific.bin',
- the_run_name=   'pacific_subdomain',
-# fresh water flux is turned on, comment next line to it turn off
-# (maybe better with surface salinity restoring)
-# EmPmRFile=      'ncep_emp_pacific.bin',
+ bathyFile=      'bathymetry.bin',
+ hydrogThetaFile='lev_t.bin',
+ hydrogSaltFile= 'lev_s.bin',
  &
