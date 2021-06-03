@@ -1,0 +1,72 @@
+#--------------------------------------------------------------------------------
+# Diagnostics_vec Package Choices
+#--------------------------------------------------------------------------------
+#     Averaging Period:
+#     nml_avgPeriod : averaging period duration (negative => snapshot)
+#     nml_startTime : start time of output
+#     nml_endTime : end time of output
+#     nml_debugLevel : determine how much output is printed from each function 
+#                      (increases in output from 0 to 3)
+#
+#     Mask Files:
+#     nml_boundaryFiles : filenames of lateral boundary mask
+#     nml_surfaceFiles : filenames of surface boundary mask
+#
+#     2D Boundary Extraction Fields
+#     nml_fields2D : field names for 2D ocean state/flux variables for each open
+#                    boundary (e.g. ETAN)
+#
+#     3D Boundary Extraction Fields
+#     nml_fields3D : field names for 3D ocean state/flux variables for each open
+#                    boundary (e.g. THETA)
+#                       usage: nml_fields3D(1:2,3) = 'THETA   ','SALT   ',
+#                              - first field is for variables, 
+#                              - second is for the mask number
+#     nml_levels3D : depths of 3D fields for each open boundary
+#                    (starting from surface)
+#
+#     Surface Boundary Extraction Fields
+#     nml_fieldsSurf : field names for surface ocean state/flux variables for
+#                      each open boundary (e.g. XXXXXX)
+#
+#     Output Options:
+#     nml_filePrec : output file real precision (same as input masks, = 32 or 64)
+#--------------------------------------------------------------------------------
+
+ &DIAG_VEC_INPUT_VARS
+
+# averaging times
+ nml_avgPeriod = 43200.,
+ nml_startTime = 0,
+ nml_endTime = 1576800000.,
+
+# mask files names for the lateral variables
+ nml_vecFiles(1) = 'lateral_mask_south.bin',
+ nml_vecFiles(2) = 'lateral_mask_east.bin',
+ nml_vecFiles(3) = 'lateral_mask_north.bin',
+ nml_vecFiles(4) = 'lateral_mask_west.bin',
+
+# mask files names for the surface variables
+ nml_sfFiles(1) = 'surface_mask.bin',
+
+# requested 2D output variables
+ nml_fields2D(1,1) = 'ETAN    ',
+ nml_fields2D(1,2) = 'ETAN    ',
+ nml_fields2D(1,3) = 'ETAN    ',
+ nml_fields2D(1,4) = 'ETAN    ',
+
+# requested 3D output variables
+ nml_fields3D(1:7,1) = 'THETA   ','SALT   ','UVEL    ','VVEL    ','WVEL    ','GU      ','GV      ',
+ nml_levels3D(1:7,1) =   15, 15, 15, 15, 15, 15, 15, 
+ nml_fields3D(1:7,2) = 'THETA   ','SALT   ','UVEL    ','VVEL    ','WVEL    ','GU      ','GV      ',
+ nml_levels3D(1:7,2) =   15, 15, 15, 15, 15, 15, 15, 
+ nml_fields3D(1:7,3) = 'THETA   ','SALT   ','UVEL    ','VVEL    ','WVEL    ','GU      ','GV      ',
+ nml_levels3D(1:7,3) =   15, 15, 15, 15, 15, 15, 15, 
+ nml_fields3D(1:7,4) = 'THETA   ','SALT   ','UVEL    ','VVEL    ','WVEL    ','GU      ','GV      ',
+ nml_levels3D(1:7,4) =   15, 15, 15, 15, 15, 15, 15, 
+
+# requested surface output variables
+ nml_fieldsSF(1:4,1) = 'USTRESS ','VSTRESS ','QNET    ','EMPMR   ',
+ nml_combMaskTimeLevels = .TRUE.,
+ nml_filePrec = 32,
+ &

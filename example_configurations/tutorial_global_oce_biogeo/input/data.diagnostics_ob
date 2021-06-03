@@ -1,0 +1,63 @@
+#--------------------------------------------------------------------------------
+# Diagnostics_ob Package Choices
+#--------------------------------------------------------------------------------
+#     Averaging Period:
+#     nml_avgPeriod : averaging period duration
+#     nml_startTime : start time of output
+#     nml_endTime : end time of output
+#
+#     Mask Files:
+#     nml_boundaryFiles : filenames of lateral boundary mask
+#     nml_surfaceFiles : filenames of surface boundary mask
+#
+#     2D Boundary Extraction Fields
+#     nml_fields2D : field names for 2D ocean state/flux variables for each open
+#                    boundary (e.g. ETAN)
+#
+#     3D Boundary Extraction Fields
+#     nml_fields3D : field names for 3D ocean state/flux variables for each open
+#                    boundary (e.g. THETA)
+#     nml_levels3D : depths of 3D fields for each open boundary
+#                    (starting from surface)
+#
+#     Surface Boundary Extraction Fields
+#     nml_fieldsSF : field names for surface ocean state/flux variables for
+#                      each open boundary
+#
+#     Output Options:
+#     nml_filePrec : output file real precision (32 or 64 bits)
+#     nml_combMaskTimeLevels : 
+#--------------------------------------------------------------------------------
+
+ &DIAG_OB_INPUT_VARS
+
+ nml_avgPeriod = 43200.,
+ nml_startTime = 223948800000.,
+ nml_endTime = 223948972800.,
+
+ nml_obFiles(1) = 'lateral_mask_south.bin',
+ nml_obFiles(2) = 'lateral_mask_east.bin',
+ nml_obFiles(3) = 'lateral_mask_north.bin',
+ nml_obFiles(4) = 'lateral_mask_west.bin',
+
+ nml_sfFiles(1) = 'surface_mask.bin',
+
+ nml_fields2D(1,1) = 'ETAN    ',
+ nml_fields2D(1,2) = 'ETAN    ',
+ nml_fields2D(1,3) = 'ETAN    ',
+ nml_fields2D(1,4) = 'ETAN    ',
+
+ nml_fields3D(1:6,1) = 'PTRACE01','PTRACE02','PTRACE03','PTRACE04','PTRACE05','THETA  ',
+ nml_levels3D(1:6,1) = 15,15,15,15,15,15,
+ nml_fields3D(1:6,2) = 'PTRACE01','PTRACE02','PTRACE03','PTRACE04','PTRACE05','THETA  ',
+ nml_levels3D(1:6,2) = 15,15,15,15,15,15,
+ nml_fields3D(1:6,3) = 'PTRACE01','PTRACE02','PTRACE03','PTRACE04','PTRACE05','THETA  ',
+ nml_levels3D(1:6,3) = 15,15,15,15,15,15,
+ nml_fields3D(1:6,4) = 'PTRACE01','PTRACE02','PTRACE03','PTRACE04','PTRACE05','THETA  ',
+ nml_levels3D(1:6,4) = 15,15,15,15,15,15,
+
+ nml_fieldsSF(1:2,1) = 'THETA  ','SALT    ',
+
+ nml_filePrec = 32,
+ nml_combMaskTimeLevels = .TRUE.,
+ &

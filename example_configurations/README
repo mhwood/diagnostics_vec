@@ -1,0 +1,32 @@
+This verification for the diagnostics_ob package mirrors the standard MITgcm verification procedure.
+
+This directory contains the following components:
+
+-----------------------------------------------------------------------
+New Source Files
+-----------------------------------------------------------------------
+The directory new_src_inc_files contains files which will eventually be update those in model/src and model/inc
+-----------------------------------------------------------------------
+
+-----------------------------------------------------------------------
+Tutorials
+-----------------------------------------------------------------------
+The verification of the package uses the verification framework of the MITgcm, with the new package and other pertinent files.
+
+To run the verification for for all configurations, run the following steps:
+ - setup_all.sh
+     - link files from verification, create masks for testing
+ - build_all.sh
+     - standard build steps for MITgcm models using MPI (edit with your system's opt file)
+ - run_all.sh
+     - standard run steps for MITgcm models using MPI
+
+To return the verification back to its initial state, use reset.sh
+-----------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------
+Notebooks
+-----------------------------------------------------------------------
+Here, we provide a series of notebooks that are used to compare/visualize the outputs from the new package in reference to those from the tutorials.
+-----------------------------------------------------------------------
