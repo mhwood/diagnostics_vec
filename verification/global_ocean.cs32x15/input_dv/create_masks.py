@@ -37,6 +37,7 @@ def create_mask(X,Y,lon,lat):
     last_index = -100000000
     counter = 0
     for ll in range(len(lon)):
+        print(lon[ll])
         dist = ((X - lon[ll]) ** 2 + (Y - lat[ll]) ** 2) ** 0.5
         index = np.argmin(dist)
         if index != last_index:
@@ -45,35 +46,30 @@ def create_mask(X,Y,lon,lat):
             mask[index] = counter
     return(mask)
 
-
-# mask boundaries
-min_lon = 120
-max_lon = 240
-min_lat = -10
-max_lat = 30
-
-input_dir = os.path.join('..','input')
-
-mask_names = ['lateral_mask_south','lateral_mask_north',
-              'lateral_mask_east','lateral_mask_west']
+input_dir = os.getcwd()
 
 X,Y = read_cs32_faces(input_dir)
 
-for mask_name in mask_names:
-    print('Creating '+mask_name)
-    if mask_name=='lateral_mask_south':
-        lon = np.arange(min_lon, max_lon + 1)
-        lat = min_lat * np.ones_like(lon)
-    if mask_name=='lateral_mask_north':
-        lon = np.arange(min_lon, max_lon + 1)
-        lat = max_lat * np.ones_like(lon)
-    if mask_name=='lateral_mask_east':
-        lat = np.arange(min_lat, max_lat + 1)
-        lon = max_lon * np.ones_like(lat)
-    if mask_name=='lateral_mask_west':
-        lat = np.arange(min_lat, max_lat + 1)
-        lon = min_lon * np.ones_like(lat)
-    mask = create_mask(X,Y,lon,lat)
-    output_file = input_dir + '/'+mask_name+'.bin'
-    mask.astype('>f8').tofile(output_file)
-    print('    Mask contains '+str(np.sum(mask>0))+' points')
+# create the equator mask
+lon = np.arange(360)
+lat = np.zeros_like(lon)
+mask = create_mask(X,Y,lon,lat)
+output_file = input_dir + '/equator_mask.bin'
+mask.astype('>f8').tofile(output_file)
+print('    Equator mask contains '+str(np.sum(mask>0))+' points')
+
+X,Y = read_cs32_faces(input_dir)
+
+# create the equator mask
+lat1 = np.arange(-90,91,1)
+lon1 = np.zeros_like(lat1)
+lat2 = np.flip(np.arange(-90,91,1))
+lon2 = 180*np.ones_like(lat2)
+lat = np.concatenate([lat1,lat2])
+lon = np.concatenate([lon1,lon2])
+print(np.shape(lon))
+print(np.shape(lat))
+mask = create_mask(X,Y,lon,lat)
+output_file = input_dir + '/prime_meridian_mask.bin'
+mask.astype('>f8').tofile(output_file)
+print('    Prime meridian mask contains '+str(np.sum(mask>0))+' points')
