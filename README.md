@@ -1,5 +1,4 @@
-# diagnostics_vec
-A diagnostics package for [MITgcm](https://github.com/MITgcm/MITgcm)
+## diagnostics_vec: A diagnostics package for [MITgcm](https://github.com/MITgcm/MITgcm)
 
 Authors: Michael Wood, Ian Fenty, April Shin
 
