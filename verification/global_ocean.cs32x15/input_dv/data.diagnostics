@@ -1,0 +1,40 @@
+# Diagnostic Package Choices
+#--------------------
+#  dumpAtLast (logical): always write output at the end of simulation (default=F)
+#  diag_mnc   (logical): write to NetCDF files (default=useMNC)
+#--for each output-stream:
+#  fileName(n) : prefix of the output file name (max 80c long) for outp.stream n
+#  frequency(n):< 0 : write snap-shot output every |frequency| seconds
+#               > 0 : write time-average output every frequency seconds
+#  timePhase(n)     : write at time = timePhase + multiple of |frequency|
+#    averagingFreq  : frequency (in s) for periodic averaging interval
+#    averagingPhase : phase     (in s) for periodic averaging interval
+#    repeatCycle    : number of averaging intervals in 1 cycle
+#  levels(:,n) : list of levels to write to file (Notes: declared as REAL)
+#                when this entry is missing, select all common levels of this list
+#  fields(:,n) : list of selected diagnostics fields (8.c) in outp.stream n
+#                (see "available_diagnostics.log" file for the full list of diags)
+#  missing_value(n) : missing value for real-type fields in output file "n"
+#  fileFlags(n)     : specific code (8c string) for output file "n"
+#--------------------
+ &DIAGNOSTICS_LIST
+# diag_mnc     = .FALSE.,
+#--
+  fields(1,1) = 'ETAN    ',
+  levels(1,1) = 1.,
+  fileName(1) = 'surfDiag',
+  frequency(1) =  864000.,
+#--
+  fields(1:4,2) = 'UVEL    ','VVEL    ','THETA   ','SALT    ',
+#  fileName(2) = 'dynDiag',
+  frequency(2) = 1728000.,
+#--
+  fields(1:5,3)  = 'SIheff  ','SIarea  ','SIhsnow ',
+                   'SIuice  ','SIvice  ',
+  fileName(3) = 'siDiag',
+  frequency(3) = 1728000.,
+ &
+
+ &DIAG_STATIS_PARMS
+ &
+
