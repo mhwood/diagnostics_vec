@@ -42,7 +42,7 @@ C     !LOCAL VARIABLES:
        REAL*8 buffer3D(sNx+sNy, Nr)
        REAL*8 bufferSF(sNx*sNy)
 
-       INTEGER, PARAMETER :: debug = 1
+       INTEGER, PARAMETER :: debug = 0
 
        LOGICAL DIFFERENT_MULTIPLE
 

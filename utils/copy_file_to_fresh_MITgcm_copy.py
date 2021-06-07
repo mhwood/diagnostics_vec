@@ -20,22 +20,29 @@ def update_PARAMS(inc_dir):
     f.close()
     lines = lines.split('\n')
 
-    # add the note to the chain
-    indicator = '      LOGICAL useDiagnostics'
-    skip_line = 0
-    add_lines = ['      LOGICAL useDiagnostics_vec']
-    lines = add_new_lines(lines, indicator, skip_line, add_lines)
+    pkg_already_added = False
+    for line in lines:
+        if 'useDiagnostics_vec' in line:
+            pkg_already_added = True
 
-    # add the note to the chain
-    indicator = '     &        useDiagnostics, useREGRID, useLayers, useMNC,'
-    skip_line = 0
-    add_lines = ['     &        useDiagnostics_vec,']
-    lines = add_new_lines(lines, indicator, skip_line, add_lines)
+    if not pkg_already_added:
+        # add the note to the chain
+        indicator = '      LOGICAL useDiagnostics'
+        skip_line = 0
+        add_lines = ['      LOGICAL useDiagnostics_vec']
+        lines = add_new_lines(lines, indicator, skip_line, add_lines)
 
-    output = '\n'.join(lines)
-    g = open(os.path.join(inc_dir,'PARAMS.h'),'w')
-    g.write(output)
-    g.close()
+        # add the note to the chain
+        indicator = '     &        useDiagnostics, useREGRID, useLayers, useMNC,'
+        skip_line = 0
+        add_lines = ['     &        useDiagnostics_vec,']
+        lines = add_new_lines(lines, indicator, skip_line, add_lines)
+
+        output = '\n'.join(lines)
+        g = open(os.path.join(inc_dir,'PARAMS.h'),'w')
+        g.write(output)
+        g.close()
+    return(pkg_already_added)
 
 def update_packages_boot(src_dir):
     f=open(os.path.join(src_dir,'packages_boot.F'))
@@ -221,13 +228,16 @@ def update_boot_sequence_files(mitgcm_path):
     inc_dir = os.path.join(mitgcm_path,'model','inc')
     src_dir = os.path.join(mitgcm_path, 'model', 'src')
 
-    update_PARAMS(inc_dir)
-    update_packages_boot(src_dir)
-    update_packages_check(src_dir)
-    update_packages_init_fixed(src_dir)
-    update_packages_init_variables(src_dir)
-    update_packages_readparms(src_dir)
-    update_do_the_model_io(src_dir)
+    pkg_already_added = update_PARAMS(inc_dir)
+    if not pkg_already_added:
+        update_packages_boot(src_dir)
+        update_packages_check(src_dir)
+        update_packages_init_fixed(src_dir)
+        update_packages_init_variables(src_dir)
+        update_packages_readparms(src_dir)
+        update_do_the_model_io(src_dir)
+    else:
+        print('    Diagnostics_vec has already been added to the boot sequence!')
 
 ######################################################################
 # This function is to add the new package files to the pkg dir
@@ -256,6 +266,7 @@ def add_diagnostics_vec_package_files(mitgcm_path):
 def add_to_verification_experiments(mitgcm_path,create_compile_scripts):
     experiment_names = ['global_ocean.cs32x15','global_with_exf']
     for experiment_name in experiment_names:
+        print('Adding new confirguration to '+experiment_name)
 
         if experiment_name=='global_ocean.cs32x15':
             if 'input_dv.seaice' in os.listdir(os.path.join(mitgcm_path,'verification',experiment_name)):
@@ -269,7 +280,7 @@ def add_to_verification_experiments(mitgcm_path,create_compile_scripts):
             shutil.rmtree(os.path.join(mitgcm_path,'verification',experiment_name,'code_dv'))
         os.mkdir(os.path.join(mitgcm_path,'verification',experiment_name,'code_dv'))
 
-        for subdir in ['input_dv.seaice','code_dv','input']:
+        for subdir in ['input_dv.seaice','code_dv','input_dv']:
             if subdir in os.listdir(os.path.join('..','verification',experiment_name)):
                 for file_name in os.listdir(os.path.join('..','verification',experiment_name,subdir)):
                     # os.symlink(os.path.join('..', 'verification', experiment_name, file_name,sub_file_name),
@@ -296,10 +307,12 @@ def add_to_verification_experiments(mitgcm_path,create_compile_scripts):
             f.write(build_text)
             f.close()
 
-            run_text = 'rm -r run/mnc*'
-            run_text += '\nrm run/*'
+            run_text += 'rm run/*'
             run_text += '\ncd run'
-            run_text += '\nln -s ../input_dv.seaice/* .'
+            if experiment_name == 'global_ocean.cs32x15':
+                run_text += '\nln -s ../input_dv.seaice/* .'
+            if experiment_name == 'global_with_exf':
+                run_text += '\nln -s ../input_dv/* .'
             run_text += '\ncp ../build/mitgcmuv .'
             run_text += '\n./mitgcmuv > output.txt'
             f = open(os.path.join(mitgcm_path, 'verification', experiment_name, 'run_dv.sh'), 'w')
@@ -311,8 +324,10 @@ def add_to_verification_experiments(mitgcm_path,create_compile_scripts):
             run_text += '\ncd run'
             run_text += '\nln -s ../input_dv.seaice/* .'
             if experiment_name == 'global_with_exf':
+                run_text += '\nln -s ../input_dv/* .'
                 run_text += '\nmpirun -np 2 ../build/mitgcmuv'
             if experiment_name == 'global_ocean.cs32x15':
+                run_text += '\nln -s ../input_dv.seaice/* .'
                 run_text += '\nmpirun -np 4 ../build/mitgcmuv'
             f = open(os.path.join(mitgcm_path, 'verification', experiment_name, 'run_dv_mpi.sh'), 'w')
             f.write(run_text)
@@ -327,13 +342,16 @@ def copy_files_to_fresh_clone(mitgcm_path,create_compile_scripts):
     if pwd_short!='utils':
         raise ValueError('Run this code from within the utils dir')
 
+    print('Updating the boot sequence files in model/* directory')
     # step 1: remove the old boot sequence files and add the new ones
-    # update_boot_sequence_files(mitgcm_path)
+    update_boot_sequence_files(mitgcm_path)
 
+    print('Updating doagnostics_vec files in the pkg directory')
     # step 2: add the new diagnostics_vec_package
-    # add_diagnostics_vec_package_files(mitgcm_path)
+    add_diagnostics_vec_package_files(mitgcm_path)
 
     # step 3: add the verification experiments
+    print('Updating the verification experiments')
     add_to_verification_experiments(mitgcm_path,create_compile_scripts)
 
 if __name__ == '__main__':
