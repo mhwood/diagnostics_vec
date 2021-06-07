@@ -254,22 +254,28 @@ def add_diagnostics_vec_package_files(mitgcm_path):
                        os.path.join(mitgcm_path, 'pkg', 'diagnostics_vec', file_name))
 
 def add_to_verification_experiments(mitgcm_path,create_compile_scripts):
-    experiment_names = ['global_ocean.cs32x15']#'global_with_exf
+    experiment_names = ['global_ocean.cs32x15','global_with_exf']
     for experiment_name in experiment_names:
 
-        if 'input_dv.seaice' in os.listdir(os.path.join(mitgcm_path,'verification',experiment_name)):
-            shutil.rmtree(os.path.join(mitgcm_path,'verification',experiment_name,'input_dv.seaice'))
-        os.mkdir(os.path.join(mitgcm_path,'verification',experiment_name,'input_dv.seaice'))
+        if experiment_name=='global_ocean.cs32x15':
+            if 'input_dv.seaice' in os.listdir(os.path.join(mitgcm_path,'verification',experiment_name)):
+                shutil.rmtree(os.path.join(mitgcm_path,'verification',experiment_name,'input_dv.seaice'))
+            os.mkdir(os.path.join(mitgcm_path,'verification',experiment_name,'input_dv.seaice'))
+        if experiment_name=='global_with_exf':
+            if 'input_dv' in os.listdir(os.path.join(mitgcm_path,'verification',experiment_name)):
+                shutil.rmtree(os.path.join(mitgcm_path,'verification',experiment_name,'input_dv'))
+            os.mkdir(os.path.join(mitgcm_path,'verification',experiment_name,'input_dv'))
         if 'code_dv' in os.listdir(os.path.join(mitgcm_path,'verification',experiment_name)):
             shutil.rmtree(os.path.join(mitgcm_path,'verification',experiment_name,'code_dv'))
         os.mkdir(os.path.join(mitgcm_path,'verification',experiment_name,'code_dv'))
 
-        for subdir in ['input_dv.seaice','code_dv']:
-            for file_name in os.listdir(os.path.join('..','verification',experiment_name,subdir)):
-                # os.symlink(os.path.join('..', 'verification', experiment_name, file_name,sub_file_name),
-                #            os.path.join(mitgcm_path, 'verification', experiment_name, file_name,sub_file_name))
-                shutil.copyfile(os.path.join('..', 'verification', experiment_name, subdir, file_name),
-                           os.path.join(mitgcm_path, 'verification', experiment_name, subdir, file_name))
+        for subdir in ['input_dv.seaice','code_dv','input']:
+            if subdir in os.listdir(os.path.join('..','verification',experiment_name)):
+                for file_name in os.listdir(os.path.join('..','verification',experiment_name,subdir)):
+                    # os.symlink(os.path.join('..', 'verification', experiment_name, file_name,sub_file_name),
+                    #            os.path.join(mitgcm_path, 'verification', experiment_name, file_name,sub_file_name))
+                    shutil.copyfile(os.path.join('..', 'verification', experiment_name, subdir, file_name),
+                               os.path.join(mitgcm_path, 'verification', experiment_name, subdir, file_name))
 
         if create_compile_scripts:
             build_text = 'cd build'
