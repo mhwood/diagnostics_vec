@@ -26,7 +26,7 @@ fi
 ###########################################################################
 # Link the input files from the input directory
 
-fileList="data data.cal data.diagnostics data.exf data.gmredi data.profiles eedata eedata.mth POLY3.COEFFS prof_exemple.nc"
+fileList="data.cal data.exf data.gmredi data.profiles eedata eedata.mth POLY3.COEFFS prof_exemple.nc"
 
 fromDir="../input"
 

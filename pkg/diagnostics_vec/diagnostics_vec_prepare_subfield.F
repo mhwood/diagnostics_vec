@@ -274,8 +274,8 @@ C       Save unique tag for field and incremement tag for next field to be extra
 C          i,j indices with respect to process' sub mask for open boundary points (Note: all processes have their own declared sf_sub_local_ij)
            j = sf_sub_local_ij(sf_id,2,loc_count)
            i = sf_sub_local_ij(sf_id,1,loc_count)
-           bj = vec_sub_local_ij(vec_id,4,loc_count)
-           bi = vec_sub_local_ij(vec_id,3,loc_count)
+           bj = sf_sub_local_ij(vec_id,4,loc_count)
+           bi = sf_sub_local_ij(vec_id,3,loc_count)
 
 C          Comparing strings provided by user to fields in diagnostics_vec
 C          First part of list is for 2D surface fields
