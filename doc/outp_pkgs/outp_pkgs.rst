@@ -897,10 +897,10 @@ Key Subroutines and Parameters
 ------------------------------
 
 The diagnostics_vec package rests on three fundamental routines: 
-1. `identify_vec_points`
+1. ``identify_vec_points``
 (defined within :filelink:`diagnostics_vec_init_fixed.F <pkg/diagnostics_vec/diagnostics_vec_init_fixed.F>`) 
-2. `set_subfields` (defined within :filelink:`diagnostics_vec_prepare_subfield.F <pkg/diagnostics_vec/diagnostics_vec_prepare_subfield.F>`.) 
-3. `vec_master_proc_tasks` (defined within :filelink:`diagnostics_vec_output.F <pkg/diagnostics_vec/diagnostics_vec_output.F>`.) 
+2. ``set_subfields`` (defined within :filelink:`diagnostics_vec_prepare_subfield.F <pkg/diagnostics_vec/diagnostics_vec_prepare_subfield.F>`.) 
+3. ``vec_master_proc_tasks`` (defined within :filelink:`diagnostics_vec_output.F <pkg/diagnostics_vec/diagnostics_vec_output.F>`.) 
 Note that these routines are for the vector masks, and there are corresponding routines for surface masks.
 
 :filelink:`diagnostics_vec_init_fixed.F <pkg/diagnostics_vec/diagnostics_vec_init_fixed.F>`:
@@ -908,7 +908,7 @@ This is the main user interface routine to the
 diagnostics package. This routine will increment the specified
 diagnostic quantity with a field sent through the argument list.
 
-The primary function of the `identify_vec_points` routine is fill in three key
+The primary function of the ``identify_vec_points`` routine is fill in three key
 reference lists that are used at each time step to organize and collect
 requested diagnostics at specific locations:  
 
@@ -917,7 +917,7 @@ requested diagnostics at specific locations:
 	    vec_numPnts_allproc(nVEC_mask, nPx*nPy)
             vec_mask_index_list(nVEC_mask, nPx*nPy, sNx + sNy)
 
-The first list, `vec_sub_local_ij`, keeps a sequential record of the locations of each
+The first list, ``vec_sub_local_ij``, keeps a sequential record of the locations of each
 model diagnostic on each tile. For example, the 11th point along the 7th vector mask is found
 at 
 
@@ -931,14 +931,14 @@ on subtile
 
 This list is used at each timestep to collect the requested diagnostics at the mask-defined locations without looping through the entire domain. 
 
-The second list, `vec_numPnts_allproc`, keeps a record of the number of mask points for each processing tile, and is accessed at each timestep, as described below. By looping over only the known number of points, a loopover the entire domain is avoided.
+The second list, ``vec_numPnts_allproc``, keeps a record of the number of mask points for each processing tile, and is accessed at each timestep, as described below. By looping over only the known number of points, a loopover the entire domain is avoided.
 
 :filelink:`set_subfields <pkg/diagnostics_vec/diagnostics_vec_prepare_subfield.F>`:
-The `set_subfields` routine collects the requested model diagnostics for each mask provided. This step uses the `vec_sub_local_ij` and `vec_numPnts_allproc` references created above to organize the desried diagnostics. At each timestep (as seen by do_the_model_io.F), the routine loops through the number of points the processing tile contains (accessed from `vec_numPnts_allproc`), get the coordinates within the subtile (accessed from `vec_sub_local_ij`) and stores these values in an ordered list. These values continue to be stored and incremented until the output time is reached.
+The ``set_subfields`` routine collects the requested model diagnostics for each mask provided. This step uses the ``vec_sub_local_ij`` and ``vec_numPnts_allproc`` references created above to organize the desried diagnostics. At each timestep (as seen by ``do_the_model_io.F``), the routine loops through the number of points the processing tile contains (accessed from ``vec_numPnts_allproc``), get the coordinates within the subtile (accessed from ``vec_sub_local_ij``) and stores these values in an ordered list. These values continue to be stored and incremented until the output time is reached.
 
 
 :filelink:`vec_master_proc_tasks <pkg/diagnostics_vec/diagnostics_vec_output.F>`:
-This is the main routine which prepares the variables for output and stores them in a file. The routine starts with the main processing node storing its values (if it has any) in a global array. Here, the locations of the points within the output array are given by the `vec_mask_index_list` array. If MPI is not used, then then this processing node will already have all of the information it needs for output. If MPI is used, then the main processing node needs to collect the information from all of the other nodes before it can output the field. At this point, the organizational information in vec_mask_index_list is critical because it describes where the data from each node should be placed in the global array. For example, the 5th processing tile may only have points 12-15 of the 6th mask, such that 
+This is the main routine which prepares the variables for output and stores them in a file. The routine starts with the main processing node storing its values (if it has any) in a global array. Here, the locations of the points within the output array are given by the ``vec_mask_index_list`` array. If MPI is not used, then then this processing node will already have all of the information it needs for output. If MPI is used, then the main processing node needs to collect the information from all of the other nodes before it can output the field. At this point, the organizational information in vec_mask_index_list is critical because it describes where the data from each node should be placed in the global array. For example, the 5th processing tile may only have points 12-15 of the 6th mask, such that 
 
 ::
             vec_mask_index_list(6, 5, 1) = 12
