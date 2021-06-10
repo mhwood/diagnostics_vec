@@ -42,7 +42,7 @@ C     !LOCAL VARIABLES:
        REAL*8 buffer3D(sNx+sNy, Nr)
        REAL*8 bufferSF(sNx*sNy)
 
-       INTEGER, PARAMETER :: debug = 0
+       INTEGER, PARAMETER :: debug = 1
 
        LOGICAL DIFFERENT_MULTIPLE
 
@@ -189,6 +189,8 @@ C       The parent node does the receiving in VEC_MASTER_PROC_TASKS
         DO vec_id=1, nVEC_mask
 
 #ifdef ALLOW_USE_MPI
+C        When not using MPI, proc 0 already has all of the information
+C           In other words, there are no other process that would be sending info
 
 C         Processes 1 and onward send sub fields to master process
 C         if they have open boundary points
@@ -327,9 +329,12 @@ C      Move on to next time step
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 
-      SUBROUTINE VEC_MASTER_PROC_TASKS(fld, vec_id, nDim, myThid, myTime,
-     &                             myIter)
+      SUBROUTINE VEC_MASTER_PROC_TASKS(fld, vec_id, nDim, myThid, 
+     &                             myTime, myIter)
+
 C     Appending subFields to final global_vec array
+
+         IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "EESUPPORT.h"
@@ -347,7 +352,6 @@ C     myTime :: current time in model
       _RL myTime
       REAL*8 buffer2D(sNx+sNy)
       REAL*8 buffer3D(sNx+sNy, Nr)
-      _RS dummyRS(1)
       INTEGER total_valid, i, k, count
       INTEGER, PARAMETER :: debug = 0
 #ifndef ALLOW_USE_MPI
@@ -359,21 +363,7 @@ C     myTime :: current time in model
       common / local_var / total_valid
       
 
-      DO i=1,sNx+sNy
-        buffer2D(i) = 0.0
-        DO k=1,Nr
-          buffer3D(i,k) = 0.0
-        ENDDO
-      ENDDO
 
-      total_valid = 0
-
-C-----Append Local Array--------------------------------------------------------
-C     - First append process 0 local arrays to final global array if number of
-C          valid elements in those local arrays > 0
-C     - Indices referring to process IDs begin with 1 in vec_numPnts_allproc and
-C          subFieldOnMask_2Davg
-C-------------------------------------------------------------------------------
 
       if (debug .eq. 1) then
         WRITE(msgBuf,'(A)') "========================================="
@@ -386,6 +376,21 @@ C-------------------------------------------------------------------------------
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
         endif
+
+        DO i=1,sNx+sNy
+         buffer2D(i) = 0.0
+         DO k=1,Nr
+           buffer3D(i,k) = 0.0
+         ENDDO
+       ENDDO
+ 
+       total_valid = 0
+ 
+C-----Append Local Array--------------------------------------------------------
+C     - First append process 0 local arrays to final global array if number of
+C          valid elements in those local arrays > 0
+C     - Indices referring to process IDs begin with 1 in vec_numPnts_allproc
+C-------------------------------------------------------------------------------
 
       if (debug .eq. 1) then
         WRITE(msgBuf,'(A,I5,A,I5)') "vec_numPnts_allproc ",
@@ -443,11 +448,11 @@ C       Add onto total number of VEC points
 C-----End of appending local array----------------------------------------------
 
 
+#ifdef ALLOW_USE_MPI
 C------Receiving arrays through MPI and appending-------------------------------
 C      - Receive all sub arrays from processes with pid>0 and valid elements>0.
 C      - Append receive sub arrays to final array.
 C-------------------------------------------------------------------------------
-#ifdef ALLOW_USE_MPI
 
        DO pid=1, mpiNprocs-1
 
@@ -496,8 +501,8 @@ C       ENDIF for number of valid elements
 
 C      ENDDO for pid
        ENDDO
-#endif
 C------End of receiving arrays through MPI and appending------------------------
+#endif
 
 C      Writing final output to binary file
        call WRITE_GLOBAL_BIN_VEC(total_valid,fld,vec_id,myIter,nDim)
@@ -534,7 +539,10 @@ C----&------------------------------------------------------------------xxxxxxx|
 
       SUBROUTINE SF_MASTER_PROC_TASKS(fld, sf_id, myThid, myTime,
      &                             myIter)
+
 C     Appending subFields to final global_vec array
+
+         IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "EESUPPORT.h"
@@ -547,12 +555,12 @@ C     sf_id :: current mask number
 C     nDim :: number of dimensions of field to output
 C     myThid :: thread number
 C     myTime :: current time in model
+      CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER fld, sf_id, myThid, myIter
       _RL myTime
       REAL*8 bufferSF(sNx*sNy)
-      _RS dummyRS(1)
-      INTEGER total_valid, i, k, count
-      INTEGER, PARAMETER :: debug = 0
+      INTEGER total_valid, i, count
+      INTEGER, PARAMETER :: debug = 1
 
 #ifndef ALLOW_USE_MPI
       INTEGER, PARAMETER :: mpiMyId = 0   
@@ -561,6 +569,18 @@ C     myTime :: current time in model
       common / mpi_var / status, ierror
 #endif
       common / local_var / total_valid
+
+      if (debug .eq. 1) then
+      WRITE(msgBuf,'(A)') "========================================="
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A)') "  BEGIN SF_MASTER_PROC_TASKS DEBUG "
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A)') "========================================="
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      endif
 
       DO i=1,sNx*sNy
         bufferSF(i) = 0.0
@@ -571,10 +591,15 @@ C     myTime :: current time in model
 C-----Append Local Array--------------------------------------------------------
 C     - First append process 0 local arrays to final global array if number of
 C          valid elements in those local arrays > 0
-C     - Indices referring to process IDs begin with 1 in sf_numPnts_allproc and
-C          subFieldOnMask_SFavg
+C     - Indices referring to process IDs begin with 1 in sf_numPnts_allproc
 C-------------------------------------------------------------------------------
 
+      if (debug .eq. 1) then
+         WRITE(msgBuf,'(A,I5,A,A)') "mask number:", sf_id, ", field: ",
+     &            sf_flds(fld,sf_id)
+         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      endif
 
       IF (sf_numPnts_allproc(sf_id,1).ge.1) then
 
@@ -584,20 +609,36 @@ C       Append process 0's SF time-averaged field value on SF points to final ar
 C       Add onto total number of SF points
         total_valid = total_valid + sf_numPnts_allproc(sf_id, 1)
 
+        if (debug .eq. 1) then
+      WRITE(msgBuf,'(A,A,I5,A)') "   appending local field to global ",
+     &          "array ( ",sf_numPnts_allproc(sf_id, 1),
+     &          " valid elements)"
+         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+       endif
+
       ENDIF
 
 C-----End of appending local array----------------------------------------------
 
 
+#ifdef ALLOW_USE_MPI
 C------Receiving arrays through MPI and appending-------------------------------
 C      - Receive all sub arrays from processes with pid>0 and valid elements>0.
 C      - Append receive sub arrays to final array.
 C-------------------------------------------------------------------------------
-#ifdef ALLOW_USE_MPI
 
        DO pid=1, mpiNprocs-1
 C       If number of valid elements is greater than or equal to 1
         IF (sf_numPnts_allproc(sf_id,pid+1) .ge. 1) then
+
+         if (debug .eq. 1) then
+            WRITE(msgBuf,'(A,I5,A,I5,A,I5)') "   receiving ",
+     &       sf_numPnts_allproc(sf_id,pid+1), " elements from proc ",
+     &       pid+1, " on mask number",sf_id
+            CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+          endif
 
           tag = sf_tags(sf_id, 1, fld)
 C         !MPI_RECV params: received_data, receive_count, receive_type, sender_ID, tag, comm, status, ierror
@@ -608,7 +649,7 @@ C         Master process receiving time-averaged surface field values on SF poin
 C         Appending the received time-averaged SF field values on SF points from process pid
           call APPEND_SF_VALUE(sf_id, pid, bufferSF)
 
-C        Keeping count of total number of VEC points for each mask
+C        Keeping count of total number of SF points for each mask
          total_valid = total_valid + sf_numPnts_allproc(sf_id, pid+1)
 
 C       !ENDIF for number of valid elements
@@ -616,13 +657,30 @@ C       !ENDIF for number of valid elements
 
 C      !ENDDO for pid
        ENDDO
-#endif
 C------End of receiving arrays through MPI and appending------------------------
+#endif
+
+      if (debug .eq. 1) then
+         WRITE(msgBuf,'(A,I5,A)') "   Sending ",
+     &       total_valid, " elements to file "
+         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      endif
 
 C      Writing final output to binary file
-       call WRITE_GLOBAL_BIN_SF(total_valid,fld,sf_id,myIter,nDim)
+       call WRITE_GLOBAL_BIN_SF(total_valid,fld,sf_id,myIter)
 
-
+       if (debug .eq. 1) then
+      WRITE(msgBuf,'(A)') "========================================="
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A)') "  END SF_MASTER_PROC_TASKS DEBUG "
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A)') "========================================="
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+         endif
       END
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
@@ -640,6 +698,8 @@ C----&------------------------------------------------------------------xxxxxxx|
       SUBROUTINE APPEND_VEC_VALUE2D(vec_id, pid, vec_values)
 C       Appends field value corresponding to open boundary points to final global array global_vec.
 
+
+      IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "EESUPPORT.h"
@@ -679,6 +739,7 @@ C------------------------------------------------------------------------------|
        SUBROUTINE APPEND_VEC_VALUE3D(vec_id, pid, fld, vec_values)
 C       Appends field value corresponding to open boundary points to final global array global_vec.
 
+      IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "EESUPPORT.h"
@@ -714,7 +775,8 @@ C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
       SUBROUTINE APPEND_SF_VALUE(sf_id, pid, sf_values)
 C       Appends field value corresponding to surface boundary points to final global array global_vec.
-
+      
+      IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "EESUPPORT.h"
@@ -725,10 +787,10 @@ C       Appends field value corresponding to surface boundary points to final gl
          INTEGER, PARAMETER :: print_debug = 0
 C------------------------------------------------------------------------------|
 C------------------------------------------------------------------------------|
-         sf_index = 1
+
          num_valid = sf_numPnts_allproc(sf_id,pid+1)
 
-         do i=1, num_valid
+         do i=1, num_valid+1
 C          Extracting vec_index from list for SF point i in process pid
            sf_index = sf_mask_index_list(sf_id,pid+1,i)
 
@@ -751,6 +813,8 @@ C------------------------------------------------------------------------------|
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
        SUBROUTINE VEC_PASS_RL_to_R8(buffer2D,buffer3D,vec_id,nDim,fld)
+
+         IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "DIAGNOSTICS_VEC.h"
@@ -788,6 +852,8 @@ C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
        SUBROUTINE SF_PASS_RL_to_R8(bufferSF, sf_id,fld)
+
+         IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "DIAGNOSTICS_VEC.h"

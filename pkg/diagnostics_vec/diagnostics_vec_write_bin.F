@@ -267,7 +267,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 CBOC 
        character*2 dir
        character*50 filename
-       real*4 bufferR4_2D((sNy*sNx)*(nPx*nPy))
+       real*4 bufferR4_SF((sNy*sNx)*(nPx*nPy))
        integer, parameter :: debug = 0
        logical exists
        integer LEN, i
@@ -281,12 +281,12 @@ C       -----------------------------------------------------------------------
 C       File precision: 32
 C       Field dimension: 2
 C       -----------------------------------------------------------------------
-         call SF_R8_to_R4(bufferR4_2D,fld,sf_id)
+         call SF_R8_to_R4(bufferR4_SF,fld,sf_id)
          call CREATE_FILENAME_SF(dir, sf_flds(fld,sf_id), sf_id,
      &                      filename,0, myIter)
          IF (combineMaskTimeLevels) then
 C         Writing all time levels into a single binary file
-          INQUIRE (IOLENGTH = LEN) bufferR4_2D(1:total_valid)
+          INQUIRE (IOLENGTH = LEN) bufferR4_SF(1:total_valid)
           INQUIRE (FILE=filename, EXIST=exists)
 C         If file already exists, set status as 'old'. Otherwise, 'replace'
           if (exists) then
@@ -296,11 +296,11 @@ C         If file already exists, set status as 'old'. Otherwise, 'replace'
            open(1, FILE=filename, STATUS='REPLACE', ACCESS='DIRECT',
      &          RECL = LEN )
           endif
-          write(1, REC=time_level) bufferR4_2D(1:total_valid)
+          write(1, REC=time_level) bufferR4_SF(1:total_valid)
          ELSE
 C         Write each time level into its own binary file
           open(1, FILE=filename, FORM="unformatted",ACCESS='STREAM')
-          write(1) bufferR4_2D(1:total_valid)
+          write(1) bufferR4_SF(1:total_valid)
          ENDIF
          close(1)
 
@@ -575,7 +575,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
-      SUBROUTINE SF_R8_to_R4(bufferR4_2D,fld,sf_id)
+      SUBROUTINE SF_R8_to_R4(bufferR4_SF,fld,sf_id)
       IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
@@ -583,7 +583,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 #include "DIAGNOSTICS_VEC.h"
 
 C     !INPUT PARAMETERS:
-        real*4 bufferR4_2D((sNy*sNx)*(nPx*nPy))
+        real*4 bufferR4_SF((sNy*sNx)*(nPx*nPy))
         integer fld, sf_id
 
 C     !LOCAL VARIABLES:
@@ -595,13 +595,13 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 C        Initialize buffer arrays:
        do i=1, ((sNy*sNx)*(nPx*nPy))
-         bufferR4_2D(i) = 0.0
+         bufferR4_SF(i) = 0.0
        enddo
 
 C        Set real*8 values to real*4
 
        do i=1, ((sNy*sNx)*(nPx*nPy))
-         bufferR4_2D(i) = global_SF(i)
+         bufferR4_SF(i) = global_SF(i)
        enddo
 
       END

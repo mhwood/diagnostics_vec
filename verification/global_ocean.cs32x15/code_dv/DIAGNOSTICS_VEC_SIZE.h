@@ -2,5 +2,5 @@ C------------------------------------------------------------------------------|
 C                           DIAGNOSTICS_VEC_SIZE.h
 C------------------------------------------------------------------------------|
 
-      INTEGER, PARAMETER :: nVEC_mask = 4
+      INTEGER, PARAMETER :: nVEC_mask = 2
       INTEGER, PARAMETER :: nSURF_mask = 0

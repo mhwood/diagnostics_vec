@@ -48,7 +48,7 @@ C     Assign unique tags to all 2D, 3D, and SF fields for MPI_SEND
       INTEGER nFldsSF
       INTEGER fld2D, fld3D
       INTEGER fldSF
-      INTEGER, PARAMETER :: debug = 0
+      INTEGER, PARAMETER :: debug = 1
 #ifndef ALLOW_USE_MPI
       INTEGER, PARAMETER :: mpiMyId = 0
 #endif
@@ -139,6 +139,7 @@ C          i,j indices with respect to process' sub mask for open boundary point
            i = vec_sub_local_ij(vec_id,1,loc_count)
            bj = vec_sub_local_ij(vec_id,4,loc_count)
            bi = vec_sub_local_ij(vec_id,3,loc_count)
+           
            DO k=1, vec_levels3D(fld3D,vec_id)
 
 C          Comparing strings provided by user to fields in diagnostics_vec
@@ -154,13 +155,13 @@ C          Comparing strings provided by user to fields in diagnostics_vec
             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'THETA') then
               subFieldOnMask_3D(vec_id,fld3D,loc_count,k) =
      &                                        theta(i,j,k,bi,bj)
-       if ((debug .eq. 1).and.(k.eq.1)) then
-        WRITE(msgBuf,'(A,I5,A,I5,A,F12.3)') 
-     &           "vec_id= 1, i=",i,"j=",j," k=1, theta=",
-     &            theta(i,j,1,bi,bj)
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                     SQUEEZE_RIGHT, myThid )
-        endif
+C       if ((debug .eq. 1).and.(k.eq.1)) then
+C        WRITE(msgBuf,'(A,I5,A,I5,A,F12.3)') 
+C     &           "vec_id= 1, i=",i," j=",j," k=1, theta=",
+C     &            theta(i,j,1,bi,bj)
+C        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+C     &                     SQUEEZE_RIGHT, myThid )
+C        endif
             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'SALT') then
               subFieldOnMask_3D(vec_id,fld3D,loc_count,k)=
      &                                       salt(i,j,k,bi,bj)
@@ -352,6 +353,13 @@ C          Variables from the EXF package:
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'USTRESS') then
                 subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        ustress(i,j,bi,bj)
+C        if (debug .eq. 1) then
+C        WRITE(msgBuf,'(A,I5,A,I5,A,F12.3)') 
+C     &           "sf_id= 1, i=",i,"j=",j," k=1, ustress=",
+C     &            ustress(i,j,bi,bj)
+C        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+C     &                     SQUEEZE_RIGHT, myThid )
+C        endif
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'VSTRESS') then
                 subFieldOnMask_SF(sf_id,fldSF,loc_count) =
      &                                        vstress(i,j,bi,bj)
@@ -481,6 +489,8 @@ C----&------------------------------------------------------------------xxxxxxx|
 
       SUBROUTINE SET_TO_INI_STATE(myThid)
 C     Initializes field value average  to zero
+        IMPLICIT NONE
+
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "DIAGNOSTICS_VEC.h"
@@ -560,8 +570,8 @@ C !ROUTINE: CUMULATE_FLD_TIME
 C !INTERFACE:
       SUBROUTINE CUMULATE_FLD_TIME(myThid)
 
-C     Accumulate extracted field values on VEC points
-C       - Add extracted field values on VEC points to all extracted field values on VEC points
+C     Accumulate extracted field values
+        IMPLICIT NONE  
 
 C     !USES:
 #include "SIZE.h"
@@ -575,15 +585,6 @@ C     !USES:
       INTEGER, PARAMETER :: debug = 0
 
 C----&------------------------------------------------------------------xxxxxxx|
-
-        if (debug .eq. 1) then
-        print *, "================================================",
-     &             "================================"
-        print *, "  BEGIN CUMULATE_FLD_TIME DEBUG "
-        print *, "================================================",
-     &             "================================"
-        endif
-
 
       DO vec_id=1, nVEC_mask
        DO i=1, sNx+sNy
@@ -632,7 +633,9 @@ C !ROUTINE: TIMEAVE_FLD
 
 C !INTERFACE:
       SUBROUTINE TIMEAVE_FLDS(myThid, myTime)
-C       Computes average of Diagnostics_vec fields using the number of time steps taken in current period
+C       Computes average of fields using the number of time steps taken 
+C       in current period
+        IMPLICIT NONE
 
 C     !USES:
 #include "SIZE.h"
@@ -645,7 +648,7 @@ C     !USES:
         INTEGER i, k,fld, vec_id, fld2D, fld3D
         INTEGER sf_id, fldSF
         _RL myTime
-        INTEGER, PARAMETER :: debug = 1
+        INTEGER, PARAMETER :: debug = 0
         CHARACTER*(MAX_LEN_MBUF) msgBuf
 
 C----&------------------------------------------------------------------xxxxxxx|
@@ -678,16 +681,6 @@ C----&------------------------------------------------------------------xxxxxxx|
           ENDDO
 
        ENDDO
-
-       if (debug .eq. 1) then
-        DO i=1, sNx+sNy
-        WRITE(msgBuf,'(A,I5,A,F12.3)') 
-     &           "vec_id= 1, i=",i," k=1, thetaOnMask_3Davg=",
-     &            subFieldOnMask_3Davg(1,1,i,1)
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                     SQUEEZE_RIGHT, myThid )
-        ENDDO
-        endif
 
         DO sf_id=1, nSURF_mask
           DO i=1, sNx*sNy

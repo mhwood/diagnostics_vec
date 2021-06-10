@@ -35,7 +35,7 @@ C     i, j, k, l, bi, bj, fld :: iterables
       INTEGER xSize, ySize
       INTEGER i, j, k, l, bi, bj, fld, counter, pid
       INTEGER vec_id, sf_id
-      INTEGER, PARAMETER :: debug = 0
+      INTEGER, PARAMETER :: debug = 1
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 #ifndef ALLOW_USE_MPI
       INTEGER, PARAMETER :: mpiMyId = 0
@@ -258,10 +258,8 @@ C     Locate vector mask points within each subtile
 
       IMPLICIT NONE
 #include "SIZE.h"
-C#ifdef ALLOW_USE_MPI
 #include "EEPARAMS.h"
 #include "EESUPPORT.h"
-C#endif
 #include "PARAMS.h"
 #include "DIAGNOSTICS_VEC.h"
 
@@ -270,13 +268,9 @@ C     !INPUT PARAMETERS:
 
 C     !LOCAL VARIABLES:     
       INTEGER counter, i, j, bi, bj
-      INTEGER, PARAMETER :: debug = 0
-C#ifdef ALLOW_USE_MPI
+      INTEGER, PARAMETER :: debug = 1
       CHARACTER*(MAX_LEN_MBUF) msgBuf
-C#else
-C      INTEGER MAX_LEN_MBUF
-C      PARAMETER ( MAX_LEN_MBUF = 512 )
-C      CHARACTER*(MAX_LEN_MBUF) msgBuf
+
 #ifndef ALLOW_USE_MPI
       INTEGER, PARAMETER :: mpiMyId = 0
 #endif
@@ -305,15 +299,19 @@ CBOC
 
              if (vec_subMask(vec_id,i,j,bi,bj) .ge. 1.0 ) then
 
-C              First row contains local i's. Second row contains local j's.
+C              First row contains local i's. 
+C              Second row contains local j's.
+C              Third row contains tile bi's
+C              Fourth row contains tile bi's
                vec_sub_local_ij(vec_id, 1, counter) = i
                vec_sub_local_ij(vec_id, 2, counter) = j
                vec_sub_local_ij(vec_id, 3, counter) = bi
                vec_sub_local_ij(vec_id, 4, counter) = bj
 
         if (debug .eq. 1) then
-        WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I5,A)') "vec_sub_local_ij(",
-     &        vec_id,",:,", counter,",) = (",i,',',j,")"
+        WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I5,A,I5,A,I5,A)') 
+     &      "vec_sub_local_ij(",
+     &      vec_id,",:,", counter,",) = (",i,',',j,",",bi,",",bj,")"
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &        SQUEEZE_RIGHT, myThid )
         endif
@@ -368,14 +366,11 @@ C !INTERFACE:
       SUBROUTINE IDENTIFY_SF_POINTS(sf_id, myThid)
 
 C     !DESCRIPTION:
-C     Locate open boundary points within global domain, see below for 
-C     detailed explanation
+C     Locate surface mask points within each subtile
       IMPLICIT NONE
 #include "SIZE.h"
-C#ifdef ALLOW_USE_MPI
 #include "EEPARAMS.h"
 #include "EESUPPORT.h"
-C#endif
 #include "PARAMS.h"
 #include "DIAGNOSTICS_VEC.h"
 
@@ -385,13 +380,9 @@ C     !INPUT PARAMETERS:
 
 C     !LOCAL VARIABLES:     
       INTEGER counter, i, j, bi, bj
-      INTEGER xSize, ySize
-C#ifdef ALLOW_USE_MPI
+      INTEGER, PARAMETER :: debug = 1
       CHARACTER*(MAX_LEN_MBUF) msgBuf
-C#else
-C      INTEGER MAX_LEN_MBUF
-C      PARAMETER ( MAX_LEN_MBUF = 512 )
-C      CHARACTER*(MAX_LEN_MBUF) msgBuf
+
 #ifndef ALLOW_USE_MPI
       INTEGER, PARAMETER :: mpiMyId = 0
 #endif
@@ -399,6 +390,18 @@ CEOP
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 CBOC
+
+      if (debug .eq. 1) then
+      WRITE(msgBuf,'(A)') "==========================================="
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A)') "  BEGIN IDENTIFY_SF_POINTS DEBUG "
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A)') "==========================================="
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      endif
 
       counter = 1
       DO bj = myByLo(myThid), myByHi(myThid)
@@ -408,14 +411,33 @@ CBOC
 
              if (sf_subMask(sf_id,i,j,bi,bj) .ge. 1.0 ) then
 
-C              First row contains local i's. Second row contains local j's.
+C              First row contains local i's. 
+C              Second row contains local j's.
+C              Third row contains tile bi's
+C              Fourth row contains tile bi's
                sf_sub_local_ij(sf_id, 1, counter) = i
                sf_sub_local_ij(sf_id, 2, counter) = j
                sf_sub_local_ij(sf_id, 3, counter) = bi
                sf_sub_local_ij(sf_id, 4, counter) = bj
 
+      if (debug .eq. 1) then
+      WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I5,A,I5,A,I5,A)') 
+     &      "sf_sub_local_ij(",
+     &      sf_id,",:,", counter,",) = (",i,',',j,",",bi,",",bj,")"
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &        SQUEEZE_RIGHT, myThid )
+      endif
+
               sf_mask_index_list(sf_id,mpiMyId+1,counter) = 
      &           sf_subMask(sf_id,i,j,bi,bj)
+
+      if ((debug .eq. 1).and.(sf_id.eq.1)) then
+      WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I10)') 
+     &   "sf_mask_index_list(",sf_id,",",mpiMyId+1,',',
+     &    counter,") = ",sf_mask_index_list(sf_id,mpiMyId+1,counter)
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &        SQUEEZE_RIGHT, myThid )
+      endif
 
                counter = counter + 1
              end if
@@ -425,6 +447,20 @@ C              First row contains local i's. Second row contains local j's.
       ENDDO
 
       sf_numPnts_allproc(sf_id,mpiMyId+1) = counter-1
+
+      if (debug .eq. 1) then
+      WRITE(msgBuf,'(A)') "==========================================="
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A)') "  END IDENTIFY_SF_POINTS DEBUG "
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A)') "==========================================="
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      endif
+
+      
       END
 
 CEOC

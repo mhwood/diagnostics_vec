@@ -48,8 +48,8 @@ mask.ravel(order='C').astype('>f4').tofile(file_name)
 # create the surface mask
 mask = np.zeros(domain_shape)
 counter = 1
-for col in range(min_col,max_col+1):
-    for row in range(min_row, max_row + 1):
+for row in range(min_row, max_row + 1):
+    for col in range(min_col,max_col+1):
         mask[row,col] = counter
         counter+=1
 file_name = os.path.join(os.getcwd(),'surface_mask.bin')

@@ -60,7 +60,7 @@ CBOC
 
       errCount = 0
 
-C ---  First check: the number of masks is less than 100
+C ---  The number of masks is less than 100
 C      This requirement arises due to the labeling of tags in 
 C      MPI SEND/RECV calls in diagnostics_vec_init_fixed    
       IF (nVEC_mask.GE.100) THEN
@@ -72,29 +72,7 @@ C      MPI SEND/RECV calls in diagnostics_vec_init_fixed
      &                     SQUEEZE_RIGHT , 1)
       ENDIF    
 
-C ---  Second check: the number of tiles per processor must be 1
-C      Multiple tiles have not yet been tested 
-C         -> vec_mask_index_list needs refs to tiles, which is not yet implemented
-C      IF (nSx.GT.1) THEN
-C            errCount = errCount +1
-C            WRITE(msgBuf,'(A)')
-C     &    'diagnostics_vec has not been tested with nSx > 1 or nSy > 1'
-C            CALL PRINT_ERROR( msgBuf, myThid )
-C            CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-C     &                     SQUEEZE_RIGHT , 1)
-C      ENDIF
-C
-C      IF (nSx.GT.1) THEN
-C            errCount = errCount +1
-C            WRITE(msgBuf,'(A)')
-C     &    'diagnostics_vec has not been tested with nSx > 1 or nSy > 1'
-C            CALL PRINT_ERROR( msgBuf, myThid )
-C            CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-C     &                     SQUEEZE_RIGHT , 1)
-C      ENDIF
-
-C ---  Third check: need to make sure MPI is turned on
-C      Find a flag for this
+C ---  Place any other pertinent checks here      
 
 C ---  If there were any errors, kill the run
       IF ( errCount.GE.1 ) THEN
