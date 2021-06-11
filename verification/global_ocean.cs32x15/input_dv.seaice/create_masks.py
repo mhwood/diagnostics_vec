@@ -30,14 +30,13 @@ def read_cs32_faces(input_dir):
 
     return(X,Y)
 
-def create_mask(X,Y,lon,lat):
+def create_mask_from_latlon(X,Y,lon,lat):
     X = np.reshape(X, (np.size(X), 1))
     Y = np.reshape(Y, (np.size(Y), 1))
     mask = np.zeros_like(X)
     last_index = -100000000
     counter = 0
     for ll in range(len(lon)):
-        print(lon[ll])
         dist = ((X - lon[ll]) ** 2 + (Y - lat[ll]) ** 2) ** 0.5
         index = np.argmin(dist)
         if index != last_index:
@@ -46,6 +45,18 @@ def create_mask(X,Y,lon,lat):
             mask[index] = counter
     return(mask)
 
+def create_south_pole_mask(X,Y):
+
+    mask = np.zeros_like(X)
+    counter = 0
+    for i in range(1,31):
+        for j in range(1,31):
+            counter +=1
+            mask[i,5,j] = counter
+    mask = np.reshape(mask, (np.size(mask), 1))
+    return(mask)
+
+
 input_dir = os.getcwd()
 
 X,Y = read_cs32_faces(input_dir)
@@ -53,23 +64,15 @@ X,Y = read_cs32_faces(input_dir)
 # create the equator mask
 lon = np.arange(360)
 lat = np.zeros_like(lon)
-mask = create_mask(X,Y,lon,lat)
+mask = create_mask_from_latlon(X,Y,lon,lat)
 output_file = input_dir + '/equator_mask.bin'
 mask.astype('>f8').tofile(output_file)
 print('    Equator mask contains '+str(np.sum(mask>0))+' points')
 
 X,Y = read_cs32_faces(input_dir)
 
-# create the equator mask
-lat1 = np.arange(-90,91,1)
-lon1 = np.zeros_like(lat1)
-lat2 = np.flip(np.arange(-90,91,1))
-lon2 = 180*np.ones_like(lat2)
-lat = np.concatenate([lat1,lat2])
-lon = np.concatenate([lon1,lon2])
-print(np.shape(lon))
-print(np.shape(lat))
-mask = create_mask(X,Y,lon,lat)
-output_file = input_dir + '/prime_meridian_mask.bin'
+# create the south pole mask
+mask = create_south_pole_mask(X,Y)
+output_file = input_dir + '/south_pole_mask.bin'
 mask.astype('>f8').tofile(output_file)
-print('    Prime meridian mask contains '+str(np.sum(mask>0))+' points')
+print('    South pole mask contains '+str(np.sum(mask>0))+' points')

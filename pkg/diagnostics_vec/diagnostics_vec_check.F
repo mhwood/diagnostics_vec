@@ -72,8 +72,6 @@ C      MPI SEND/RECV calls in diagnostics_vec_init_fixed
      &                     SQUEEZE_RIGHT , 1)
       ENDIF    
 
-C ---  Place any other pertinent checks here      
-
 C ---  If there were any errors, kill the run
       IF ( errCount.GE.1 ) THEN
             WRITE(msgBuf,'(A,I5,A)')

@@ -54,26 +54,26 @@ C     These store the rows/cols of valid mask locations within the masks
       INTEGER sf_sub_local_ij(nSURF_mask, 4, sNx * sNy)
 
 C     These arrays map the above counters to ordered points in the mask
-      INTEGER vec_mask_index_list(nVEC_mask, nPx*nPy, sNx + sNy)
-      INTEGER sf_mask_index_list(nSURF_mask, nPx*nPy, sNx * sNy)
+      INTEGER vec_mask_ind_list(nVEC_mask,nPx*nPy,(sNx+sNy)*(nSx*nSy))
+      INTEGER sf_mask_ind_list(nSURF_mask,nPx*nPy,(sNx*sNy)*(nSx*nSy))
 
 C     These store a list of mask points that each proc has
       INTEGER vec_numPnts_allproc(nVEC_mask, nPx*nPy)
       INTEGER sf_numPnts_allproc(nSURF_mask, nPx*nPy)
 
 C     These arrays store data at each model time step
-      _RL subFieldOnMask_2D(nVEC_mask,MAX_NFLDS, sNx + sNy)
-      _RL subFieldOnMask_3D(nVEC_mask,MAX_NFLDS, sNx + sNy, Nr)
-      _RL subFieldOnMask_2Davg(nVEC_mask,MAX_NFLDS, sNx + sNy)
-      _RL subFieldOnMask_3Davg(nVEC_mask,MAX_NFLDS, sNx + sNy, Nr)
-      _RL subFieldOnMask_SF(nSURF_mask,MAX_NFLDS, sNx * sNy)
-      _RL subFieldOnMask_SFavg(nSURF_mask,MAX_NFLDS, sNx * sNy)
+      _RL fldOnMsk_2D(nVEC_mask,MAX_NFLDS,(sNx+sNy)*(nSx*nSy))
+      _RL fldOnMsk_3D(nVEC_mask,MAX_NFLDS,(sNx+sNy)*(nSx*nSy),Nr)
+      _RL fldOnMsk_2Davg(nVEC_mask,MAX_NFLDS,(sNx+sNy)*(nSx*nSy))
+      _RL fldOnMsk_3Davg(nVEC_mask,MAX_NFLDS,(sNx+sNy)*(nSx*nSy),Nr)
+      _RL fldOnMsk_SF(nSURF_mask,MAX_NFLDS, (sNx*sNy)*(nSx*nSy))
+      _RL fldOnMsk_SFavg(nSURF_mask,MAX_NFLDS, (sNx*sNy)*(nSx*nSy))
 
 C     This is a buffer where the main output on the mask is stored
 C     Used in diagnostics_vec_output
-      REAL*8 global_vec2D((sNy+sNx)*(nPx*nPy))
-      REAL*8 global_vec3D((sNy+sNx)*(nPx*nPy), Nr)
-      REAL*8 global_SF((sNy*sNx)*(nPx*nPy))
+      REAL*8 global_vec2D((sNy+sNx)*(nPx*nPy)*(nSx*nSy))
+      REAL*8 global_vec3D((sNy+sNx)*(nPx*nPy)*(nSx*nSy), Nr)
+      REAL*8 global_SF((sNy*sNx)*(nPx*nPy)*(nSx*nSy))
 
 
 
@@ -86,14 +86,14 @@ C------------------------------------------------------------------------------|
      &     nTimeSteps_vec, time_passed,
      &     startTime_vec, endTime_vec, avgPeriod_vec,
      &     global_vec2D, global_vec3D, global_SF,
-     &     subFieldOnMask_2D, subFieldOnMask_2Davg,
-     &     subFieldOnMask_3D, subFieldOnMask_3Davg,
-     &     subFieldOnMask_SF, subFieldOnMask_SFavg
+     &     fldOnMsk_2D, fldOnMsk_2Davg,
+     &     fldOnMsk_3D, fldOnMsk_3Davg,
+     &     fldOnMsk_SF, fldOnMsk_SFavg
 
       COMMON / DIAG_VEC_VARS_I /
      &     vec_levels3D, 
      &     vec_sub_local_ij, sf_sub_local_ij,
-     &     vec_mask_index_list, sf_mask_index_list,
+     &     vec_mask_ind_list, sf_mask_ind_list,
      &     vec_numPnts_allproc, sf_numPnts_allproc,
      &     vec_nFlds2D, vec_nFlds3D, sf_nFlds, 
      &     vec_tags,sf_tags, 

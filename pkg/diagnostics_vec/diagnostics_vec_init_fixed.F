@@ -64,7 +64,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 C     This is in the initialization of the vector variables
 
-      DO i=1, (sNy+sNx)
+      DO i=1, (sNy+sNx)*(nPx*nPy)*(nSx*nSy)
         global_vec2D(i) = 0.0
         DO k=1, Nr
           global_vec3D(i,k) = 0.0
@@ -83,13 +83,13 @@ C     This is in the initialization of the vector variables
           ENDDO
         ENDDO
 
-        DO i=1, sNx+sNy
+        DO i=1, (sNx+sNy)*(nSx*nSy)
           DO fld=1, MAX_NFLDS
-            subFieldOnMask_2D(vec_id, fld, i) = 0.0
-            subFieldOnMask_2Davg(vec_id, fld, i) = 0.0
+            fldOnMsk_2D(vec_id, fld, i) = 0.0
+            fldOnMsk_2Davg(vec_id, fld, i) = 0.0
             DO k=1, Nr
-              subFieldOnMask_3D(vec_id, fld, i, k) = 0.0
-              subFieldOnMask_3Davg(vec_id, fld, i, k) = 0.0
+              fldOnMsk_3D(vec_id, fld, i, k) = 0.0
+              fldOnMsk_3Davg(vec_id, fld, i, k) = 0.0
             ENDDO
           ENDDO
         ENDDO
@@ -108,8 +108,8 @@ C     This is in the initialization of the vector variables
 
         DO i=1, nPx*nPy
           vec_numPnts_allproc(vec_id, i) = 0
-          DO j=1, sNx+sNy
-            vec_mask_index_list(vec_id,i,j) = 0
+          DO j=1, (sNx+sNy)*(nSx*nSy)
+            vec_mask_ind_list(vec_id,i,j) = 0
           ENDDO
         ENDDO
 
@@ -117,7 +117,7 @@ C     This is in the initialization of the vector variables
 
 C     This is in the initialization of the surface variables
 
-      DO i=1, (sNy*sNx)
+      DO i=1, (sNy*sNx)*(nPx*nPy)*(nSx*nSy)
         global_SF(i) = 0.0
       ENDDO
 
@@ -133,10 +133,10 @@ C     This is in the initialization of the surface variables
           ENDDO
         ENDDO
 
-        DO i=1, sNx*sNy
+        DO i=1, (sNx*sNy)*(nSx*nSy)
           DO fld=1, MAX_NFLDS
-            subFieldOnMask_SF(sf_id, fld, i) = 0.0
-            subFieldOnMask_SFavg(sf_id, fld, i) = 0.0
+            fldOnMsk_SF(sf_id, fld, i) = 0.0
+            fldOnMsk_SFavg(sf_id, fld, i) = 0.0
           ENDDO
         ENDDO
 
@@ -152,8 +152,8 @@ C     This is in the initialization of the surface variables
 
         DO i=1, nPx*nPy
           sf_numPnts_allproc(sf_id, i) = 0
-          DO j=1, sNx*sNy
-            sf_mask_index_list(sf_id,i,j) = 0
+          DO j=1, (sNx*sNy)*(nSx*nSy)
+            sf_mask_ind_list(sf_id,i,j) = 0
           ENDDO
         ENDDO
 
@@ -212,6 +212,35 @@ C       (wihout MPI, the main proc already knows this)
       CALL SEND_CHILD_TO_PARENT(myThid)
 #endif
 
+C----&------------------------------------------------------------------xxxxxxx|
+C     Print out the number of points in each proc to verify that
+C     each proc received points as expected
+
+      IF ((debug.eq.1).and.(mpiMyId.eq.0)) THEN 
+        DO vec_id=1,nVEC_mask
+          WRITE(msgBuf,'(A,A,A)') "For mask ",vec_fnames(vec_id),","
+          CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &        SQUEEZE_RIGHT, myThid )
+        DO i=1,nPx*nPy
+          WRITE(msgBuf,'(A,I5,A,I5,A)') 
+     &   "    Proc ",i," sent ",vec_numPnts_allproc(vec_id,i),' points'
+          CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &        SQUEEZE_RIGHT, myThid )
+        ENDDO
+        ENDDO
+
+        DO sf_id=1,nSURF_mask
+          WRITE(msgBuf,'(A,A,A)') "For mask ",sf_fnames(sf_id),","
+          CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &        SQUEEZE_RIGHT, myThid )
+        DO i=1,nPx*nPy
+          WRITE(msgBuf,'(A,I5,A,I5,A)') 
+     &   "    Proc ",i," sent ",sf_numPnts_allproc(sf_id,i),' points'
+          CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &        SQUEEZE_RIGHT, myThid )
+        ENDDO
+        ENDDO
+      ENDIF
 
 C----&------------------------------------------------------------------xxxxxxx|
 
@@ -317,13 +346,13 @@ C              Fourth row contains tile bi's
         endif
 
 C              Save the mask index for this processor
-               vec_mask_index_list(vec_id,mpiMyId+1,counter) = 
+               vec_mask_ind_list(vec_id,mpiMyId+1,counter) = 
      &           vec_subMask(vec_id,i,j,bi,bj)
 
         if ((debug .eq. 1).and.(vec_id.eq.1)) then
         WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I10)') 
-     &   "vec_mask_index_list(",vec_id,",",mpiMyId+1,',',
-     &    counter,") = ",vec_mask_index_list(vec_id,mpiMyId+1,counter)
+     &   "vec_mask_ind_list(",vec_id,",",mpiMyId+1,',',
+     &    counter,") = ",vec_mask_ind_list(vec_id,mpiMyId+1,counter)
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &        SQUEEZE_RIGHT, myThid )
         endif
@@ -336,6 +365,20 @@ C              Save the mask index for this processor
       ENDDO
 
       vec_numPnts_allproc(vec_id,mpiMyId+1) = counter-1 
+
+      if (debug .eq. 1) then
+      if (counter.eq.1) then 
+        WRITE(msgBuf,'(A,I5,A)') 
+     &   "Proc ",mpiMyId,' did not have any points from this mask'
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &        SQUEEZE_RIGHT, myThid )
+      else
+        WRITE(msgBuf,'(A,I5,A,I5,A)') 
+     &   "Proc ",mpiMyId,' has ',counter-1,' points'
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &        SQUEEZE_RIGHT, myThid )
+      endif
+      endif
 
       if (debug .eq. 1) then
       WRITE(msgBuf,'(A)') "==========================================="
@@ -428,13 +471,13 @@ C              Fourth row contains tile bi's
      &        SQUEEZE_RIGHT, myThid )
       endif
 
-              sf_mask_index_list(sf_id,mpiMyId+1,counter) = 
+              sf_mask_ind_list(sf_id,mpiMyId+1,counter) = 
      &           sf_subMask(sf_id,i,j,bi,bj)
 
       if ((debug .eq. 1).and.(sf_id.eq.1)) then
       WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I10)') 
-     &   "sf_mask_index_list(",sf_id,",",mpiMyId+1,',',
-     &    counter,") = ",sf_mask_index_list(sf_id,mpiMyId+1,counter)
+     &   "sf_mask_ind_list(",sf_id,",",mpiMyId+1,',',
+     &    counter,") = ",sf_mask_ind_list(sf_id,mpiMyId+1,counter)
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &        SQUEEZE_RIGHT, myThid )
       endif
@@ -447,6 +490,14 @@ C              Fourth row contains tile bi's
       ENDDO
 
       sf_numPnts_allproc(sf_id,mpiMyId+1) = counter-1
+
+
+      if ((debug .eq. 1).and.(counter.eq.1)) then
+        WRITE(msgBuf,'(A,I5,A)') 
+     &   "Proc ",mpiMyId,' did not have any points from this mask'
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &        SQUEEZE_RIGHT, myThid )
+      endif
 
       if (debug .eq. 1) then
       WRITE(msgBuf,'(A)') "==========================================="
@@ -496,8 +547,8 @@ C     !LOCAL VARIABLES:
       INTEGER vec_id, myThid
       INTEGER pid, i, status(MPI_STATUS_SIZE), ierror
       INTEGER sf_id
-      INTEGER g_vec_indices(sNx+sNy)
-      INTEGER g_sf_indices(sNx*sNy)
+      INTEGER g_vec_indices((sNx+sNy)*(nSx*nSy))
+      INTEGER g_sf_indices((sNx*sNy)*(nSx*nSy))
       INTEGER num_pts
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER, PARAMETER :: debug = 0
@@ -543,8 +594,8 @@ C      the count of the vec points
      &                     SQUEEZE_RIGHT, myThid )
           endif
           DO vec_id=1, nVEC_mask
-            call MPI_SEND(vec_mask_index_list(vec_id,mpiMyId+1,:),
-     &             sNx+sNy, MPI_INT,0, vec_id, MPI_COMM_MODEL, ierror)
+            call MPI_SEND(vec_mask_ind_list(vec_id,mpiMyId+1,:),
+     &  (sNx+sNy)*(nSx*nSy), MPI_INT,0, vec_id, MPI_COMM_MODEL, ierror)
             call MPI_SEND(vec_numPnts_allproc(vec_id,mpiMyId+1),
      &             1, MPI_INT,0, vec_id*100, MPI_COMM_MODEL, ierror)
           ENDDO
@@ -561,14 +612,14 @@ C      and then the count of vec points from child process pid
           endif
           DO pid=1, nPx*nPy-1
             DO vec_id=1, nVEC_mask
-              call MPI_RECV(g_vec_indices, sNx+sNy, MPI_INT,
+              call MPI_RECV(g_vec_indices,(sNx+sNy)*(nSx*nSy), MPI_INT,
      &                   pid, vec_id ,MPI_COMM_MODEL, status, ierror)
 
               call MPI_RECV(num_pts, 1, MPI_INT,
      &               pid, vec_id*100 ,MPI_COMM_MODEL, status, ierror)
 
-              DO i=1, sNx+sNy
-               vec_mask_index_list(vec_id,pid+1,i) 
+              DO i=1, (sNx+sNy)*(nSx*nSy)
+               vec_mask_ind_list(vec_id,pid+1,i) 
      &                   = g_vec_indices(i)
               ENDDO
               vec_numPnts_allproc(vec_id,pid+1) = num_pts
@@ -585,8 +636,8 @@ C      the count of the sf points
 
         IF (mpiMyId .gt. 0) then
           DO sf_id=1, nSURF_mask
-            call MPI_SEND(sf_mask_index_list(sf_id,mpiMyId+1,:),
-     &             sNx*sNy, MPI_INT,0, sf_id, MPI_COMM_MODEL, ierror)
+            call MPI_SEND(sf_mask_ind_list(sf_id,mpiMyId+1,:),
+     &  (sNx*sNy)*(nSx*nSy), MPI_INT,0, sf_id, MPI_COMM_MODEL, ierror)
             call MPI_SEND(sf_numPnts_allproc(sf_id,mpiMyId+1),
      &             1, MPI_INT,0, sf_id*100, MPI_COMM_MODEL, ierror)
           ENDDO
@@ -598,13 +649,13 @@ C      and then the count of SF points from child process pid
         IF (mpiMyId .eq. 0) then
           DO pid=1, nPx*nPy-1
             DO sf_id=1, nSURF_mask
-              call MPI_RECV(g_sf_indices, sNx*sNy, MPI_INT,
+              call MPI_RECV(g_sf_indices,(sNx*sNy)*(nSx*nSy), MPI_INT,
      &                   pid, sf_id ,MPI_COMM_MODEL, status, ierror)
               call MPI_RECV(num_pts, 1, MPI_INT,
      &                   pid, sf_id*100 ,MPI_COMM_MODEL, status, ierror)
 
-              DO i=1, sNx*sNy
-               sf_mask_index_list(sf_id,pid+1,i) 
+              DO i=1, (sNx*sNy)*(nSx*nSy)
+               sf_mask_ind_list(sf_id,pid+1,i) 
      &                   = g_sf_indices(i)
               ENDDO
               sf_numPnts_allproc(sf_id,pid+1) = num_pts

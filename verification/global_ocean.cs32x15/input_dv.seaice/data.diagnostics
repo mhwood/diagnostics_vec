@@ -19,22 +19,31 @@
 #--------------------
  &DIAGNOSTICS_LIST
 # diag_mnc     = .FALSE.,
+# dumpAtLast   = .TRUE.,
 #--
-  fields(1,1) = 'ETAN    ',
-  levels(1,1) = 1.,
-  fileName(1) = 'surfDiag',
-  frequency(1) =  864000.,
-#--
-  fields(1:4,2) = 'UVEL    ','VVEL    ','THETA   ','SALT    ',
-#  fileName(2) = 'dynDiag',
-  frequency(2) = 1728000.,
-#--
-  fields(1:5,3)  = 'SIheff  ','SIarea  ','SIhsnow ',
+  fields(1:5,1)  = 'SIheff  ','SIarea  ','SIhsnow ',
                    'SIuice  ','SIvice  ',
-  fileName(3) = 'siDiag',
-  frequency(3) = 1728000.,
+  fileName(1) = 'seaiceDiag',
+  frequency(1) = 86400.,
  &
 
+#--------------------
+# Parameter for Diagnostics of per level statistics:
+#--------------------
+#  diagSt_mnc (logical): write stat-diags to NetCDF files (default=diag_mnc)
+#  diagSt_regMaskFile : file containing the region-mask to read-in
+#  nSetRegMskFile   : number of region-mask sets within the region-mask file
+#  set_regMask(i)   : region-mask set-index that identifies the region "i"
+#  val_regMask(i)   : region "i" identifier value in the region mask
+#--for each output-stream:
+#  stat_fName(n) : prefix of the output file name (max 80c long) for outp.stream n
+#  stat_freq(n):< 0 : write snap-shot output every |stat_freq| seconds
+#               > 0 : write time-average output every stat_freq seconds
+#  stat_phase(n)    : write at time = stat_phase + multiple of |stat_freq|
+#  stat_region(:,n) : list of "regions" (default: 1 region only=global)
+#  stat_fields(:,n) : list of selected diagnostics fields (8.c) in outp.stream n
+#                (see "available_diagnostics.log" file for the full list of diags)
+#--------------------
  &DIAG_STATIS_PARMS
  &
 
