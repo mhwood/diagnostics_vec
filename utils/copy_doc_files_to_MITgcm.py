@@ -63,7 +63,6 @@ def reorder_pkgs_and_utilities(utilities_lines,outp_pkgs_lines,diag_vec_lines):
 def add_documentation_files(mitgcm_path,utilities_lines,outp_pkgs_lines):
 
     output_dir = mitgcm_path
-    output_dir = '/Users/michwood/Documents/Research/Projects/Ocean_Modeling/MITgcm/MITgcm_fresh2'
 
     utilities_file = os.path.join(output_dir, 'doc', 'utilities', 'utilities.rst')
     f = open(utilities_file,'w')
