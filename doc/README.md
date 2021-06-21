@@ -1,3 +1,6 @@
+## Implementing the new documentation
+The new documentation can easily be implemented into a clone (or fork) of MITgcm using the ``copy_doc_files_to_MITgcm.py`` function in the utils directory.
+
 ### A note about documentation
 To view the documentation on your local machine as its viewed on [readthedocs](https://mitgcm.readthedocs.io/en/latest/), the [sphinx](https://docs.readthedocs.io/en/stable/intro/getting-started-with-sphinx.html) package is required. To download the packages used to compile the MITgcm documentation, use the following:
 ```
