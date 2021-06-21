@@ -21,7 +21,7 @@
  &DIAGNOSTICS_LIST
   fields(1:4,1) = 'EXFtaux ','EXFtauy ','EXFqnet ','EXFempmr',
    fileName(1) = 'diagsEXF',
-  frequency(1) = -864000.,
+  frequency(1) = -1200.,
  &
 
 #--------------------

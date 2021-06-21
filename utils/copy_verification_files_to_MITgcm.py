@@ -50,7 +50,7 @@ def add_to_verification_experiments(mitgcm_path,create_compile_scripts):
             f.write(build_text)
             f.close()
 
-            run_text += 'rm run/*'
+            run_text = 'rm run/*'
             run_text += '\ncd run'
             if experiment_name == 'global_ocean.cs32x15':
                 run_text += '\nln -s ../input_dv.seaice/* .'
@@ -62,8 +62,7 @@ def add_to_verification_experiments(mitgcm_path,create_compile_scripts):
             f.write(run_text)
             f.close()
 
-            run_text = 'rm -r run/mnc*'
-            run_text += '\nrm run/*'
+            run_text = '\nrm run/*'
             run_text += '\ncd run'
             run_text += '\nln -s ../input_dv.seaice/* .'
             if experiment_name == 'global_with_exf':

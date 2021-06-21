@@ -25,6 +25,10 @@
                    'SIuice  ','SIvice  ',
   fileName(1) = 'seaiceDiag',
   frequency(1) = 86400.,
+#--
+  fields(1:4,2)  = 'THETA  ','SALT  ','UVEL ', 'VVEL  ',
+  fileName(2) = 'stateDiag',
+  frequency(2) = 86400.,
  &
 
 #--------------------
