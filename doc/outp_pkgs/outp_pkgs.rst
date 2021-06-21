@@ -952,64 +952,21 @@ Once the main node has received information from all other nodes, it can output 
 Usage Notes
 -----------
 To use the ``diagnostics_vec`` package, the following steps must be taken:
-    1. Enable the package in ``packages.conf``
+    1. Enable the package in ``packages.conf``.
     2. Add the compile time ``DIAGNOSTICS_VEC_SIZE.h`` file.
     2. Turn the ``useDiagnostics_vec`` flag in ``data.pkg`` to ``.TRUE.``
     3. Generate "masks" where diagnostics will be generated
     4. Generate a ``data.diagnostics_vec`` parameter file
-    
-Example ``data.diagnostics_vec`` parameter file
-"""""""""""""""""""""""""""""""""""""""""""""""
-
-::
-
-         &DIAG_OB_INPUT_VARS
-
- 	 nml_avgPeriod = 86400.,
- 	 nml_startTime = 0,
- 	 nml_endTime = 1576800000.,
-	
- 	 nml_obFiles(1) = 'boundary_mask_south.bin',
- 	 nml_obFiles(2) = 'boundary_mask_east.bin',
- 	 nml_obFiles(3) = 'boundary_mask_north.bin',
- 	 nml_obFiles(4) = 'boundary_mask_west.bin',
-	
-	 nml_sfFiles(1) = 'surface_mask.bin',
-
-	 nml_fields2D(1,1) = 'ETAN    ',
-	 nml_fields2D(1,2) = 'ETAN    ',
-	 nml_fields2D(1,3) = 'ETAN    ',
-	 nml_fields2D(1,4) = 'ETAN    ',
-	
-	 nml_fields3D(1:5,1) = 'THETA   ','SALT   ','UVEL    ','VVEL    ','WVEL    ',
-	 nml_levels3D(1:5,1) =   15, 15, 15, 15, 15,
-	 nml_fields3D(1:5,2) = 'THETA   ','SALT   ','UVEL    ','VVEL    ','WVEL    ',
-	 nml_levels3D(1:5,2) =   15, 15, 15, 15, 15,
- 	 nml_fields3D(1:5,3) = 'THETA   ','SALT   ','UVEL    ','VVEL    ','WVEL    ',
- 	 nml_levels3D(1:5,3) =   15, 15, 15, 15, 15,
- 	 nml_fields3D(1:5,4) = 'THETA   ','SALT   ','UVEL    ','VVEL    ','WVEL    ',
-	 nml_levels3D(1:5,4) =   15, 15, 15, 15, 15,
-
-	 nml_fieldsSF(1:6,1) = 'FU      ','FV      ','SST     ','SSS     ','QNET    ','EMPMR   ',
-	
-	 nml_filePrec = 32,
-	 nml_combMaskTimeLevels = .TRUE.,
-	 &
 
 Worked Examples
 ---------------
 There are two verification experiments which demonstrate the use of diagnostics_vec: global_with_exf and global_ocean.cs32x15. Each of these experiments contains code_dv which constain DIAGNOSTICS_VEC_SIZE.h and packages,conf 
 
-The generation of the sampling masks and the ``data.diagnostics_vec`` parameter file are described below.
-
-
-Examples of the mask creation are provided below, and demonstrated in two verification experiements:
-global_with_exf and global_ocean.cs32x15
+The generation of the sampling masks and the ``data.diagnostics_vec`` parameter file are demonstrated in these experiments.
 
 Specifying parameters in data.diagnostics_vec
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------
 
-Within the data.diagnostics_vec file, the following parameters must be specified:
    +------------------------+------------------------------------------------------------------------------------------+
    | Parameter              | Description                                                                              |
    +========================+==========================================================================================+
@@ -1036,46 +993,43 @@ Within the data.diagnostics_vec file, the following parameters must be specified
    | nml_combMaskTimeLevels | option to combine output fields into a single file (default is TRUE)                     |
    +------------------------+------------------------------------------------------------------------------------------+
 
-
-
-
-
 Available diagnostics
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 The following lists of variables are supported by the diagnostics_ob package.
 
-Note: Variables listed as `Lateral (1D)`, `Lateral (2D)`, and `Surface (2D)` are requested via the ``nml_fields2D``, ``nml_fields3D`` and ``nml_fieldsSF`` lists in the ``data.diagnostics_ob`` file.
+Note: Variables listed as `Vector (2D)`, `Vector (3D)`, and `Surface (2D)` are requested via the ``nml_fields2D``, ``nml_fields3D`` and ``nml_fieldsSF`` lists in the ``data.diagnostics_vec`` file.
 
 Standard Diagnostics
-""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~
+
 The following diagnostics are standard model variables and are available in any configuration.
    +----------------+------------+---------------------------------------------------------------------+
    | Boundary Type  | Variable   | Description                                                         |
    +================+============+=====================================================================+
-   | `Lateral (1D)` | ETAN       | surface height anomaly                                              |
+   | `Vector (2D)`  | ETAN       | surface height anomaly                                              |
    +----------------+------------+---------------------------------------------------------------------+
    |                | ETAH       | surface height anomaly                                              |
    +----------------+------------+---------------------------------------------------------------------+
-   | `Lateral (2D)` | THETA      | potential temperature (deg. C)                                      |
+   | `Vector (3D)`  | THETA      | potential temperature                                               |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | SALT       | salinity (psu)                                                      |
+   |                | SALT       | salinity                                                            |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | UVEL       | zonal velocity (m/s)                                                |
+   |                | UVEL       | zonal velocity                                                      |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | VVEL       | meridional velocity (m/s)                                           |
+   |                | VVEL       | meridional velocity                                                 |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | WVEL       | vertical velocity (m/s)                                             |
+   |                | WVEL       | vertical velocity                                                   |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | GU         |  ()                                                                 |
+   |                | GU         | zonal velocity tendency                                             |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | GV         |  ()                                                                 |
+   |                | GV         | meridional velocity tendency                                        |
    +----------------+------------+---------------------------------------------------------------------+
-   | `Surface (2D)` | FU         | zonal wind stress ()                                                |
+   | `Surface (2D)` | FU         | zonal wind stress                                                   |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | FV         | meridional wind stress ()                                           |
+   |                | FV         | meridional wind stress                                              |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | QNET       | net upward surface heat flux ()                                     |
+   |                | QNET       | net upward surface heat flux                                        |
    +----------------+------------+---------------------------------------------------------------------+
    |                | QSW        | net upward shortwave radiation                                      |
    +----------------+------------+---------------------------------------------------------------------+
@@ -1100,24 +1054,25 @@ The following diagnostics are standard model variables and are available in any 
 
 
 External Forcing Diagnostics
-""""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The following diagnostics are available in configurations with the use of `pkg/exf`.
    +----------------+------------+---------------------------------------------------------------------+
    | Boundary Type  | Variable   | Description                                                         |
    +================+============+=====================================================================+
-   | `Surface (2D)` | USTRESS    | zonal surface wind stress ()                                        |
+   | `Surface (2D)` | USTRESS    | surface wind stress in the +x direction                             |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | VSTRESS    | meridional surface wind stress ()                                   |
+   |                | VSTRESS    | surface wind stress in the +y direction                             |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | HFLUX      | net upward surface heat flux ()                                     |
+   |                | HFLUX      | net upward surface heat flux                                        |
    +----------------+------------+---------------------------------------------------------------------+
    |                | SFLUX      | net upward freshwater flux                                          |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | SWFLUX     | net upward fshortwave radiation                                     |
+   |                | SWFLUX     | net upward shortwave radiation                                      |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | UWIND      | surface zonal wind velocity                                         |
+   |                | UWIND      | surface wind velocity in the +x direction                           |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | VWIND      | surface meridional wind velocity                                    |
+   |                | VWIND      | surface wind velocity in the +y direction                           |
    +----------------+------------+---------------------------------------------------------------------+
    |                | WSPEED     | surface wind speed                                                  |
    +----------------+------------+---------------------------------------------------------------------+
@@ -1127,10 +1082,6 @@ The following diagnostics are available in configurations with the use of `pkg/e
    +----------------+------------+---------------------------------------------------------------------+
    |                | RUNOFF     | river and glacier runoff                                            |
    +----------------+------------+---------------------------------------------------------------------+
-
-
-
-          
 
 .. _pkg_mdsio:
 
