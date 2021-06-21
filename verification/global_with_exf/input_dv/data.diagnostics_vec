@@ -36,7 +36,7 @@
  &DIAG_VEC_INPUT_VARS
 
 # averaging times
- nml_avgPeriod = 43200.,
+ nml_avgPeriod = 1200.,
  nml_startTime = 0,
  nml_endTime = 1576800000.,
 
