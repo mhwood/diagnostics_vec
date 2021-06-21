@@ -48,7 +48,7 @@ C     Assign unique tags to all 2D, 3D, and SF fields for MPI_SEND
       INTEGER nFldsSF
       INTEGER fld2D, fld3D
       INTEGER fldSF
-      INTEGER, PARAMETER :: debug = 1
+      INTEGER, PARAMETER :: debug = 0
 #ifndef ALLOW_USE_MPI
       INTEGER, PARAMETER :: mpiMyId = 0
 #endif
@@ -136,13 +136,6 @@ C          Comparing strings provided by user to fields in diagnostics_vec
             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'THETA') then
               fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
      &                                        theta(i,j,k,bi,bj)
-C       if ((debug .eq. 1).and.(k.eq.1)) then
-C        WRITE(msgBuf,'(A,I5,A,I5,A,F12.3)') 
-C     &           "vec_id= 1, i=",i," j=",j," k=1, theta=",
-C     &            theta(i,j,1,bi,bj)
-C        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-C     &                     SQUEEZE_RIGHT, myThid )
-C        endif
             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'SALT') then
               fldOnMsk_3D(vec_id,fld3D,loc_count,k)=
      &                                       salt(i,j,k,bi,bj)
@@ -334,14 +327,6 @@ C          Variables from the EXF package:
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'USTRESS') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
      &                                        ustress(i,j,bi,bj)
-        if ((debug .eq. 1).and.(loc_count.ge.830)) then
-        WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I5,A,I5,A,F12.3)') 
-     &           "sf_id= 1, i=",i," j=",j," bi =",bi," bj=",bj,
-     &           " counter =",loc_count,
-     &            " ustress=", ustress(i,j,bi,bj)
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                     SQUEEZE_RIGHT, myThid )
-        endif
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'VSTRESS') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
      &                                        vstress(i,j,bi,bj)

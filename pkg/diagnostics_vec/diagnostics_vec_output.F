@@ -42,7 +42,7 @@ C     !LOCAL VARIABLES:
       REAL*8 bufferSF((sNx*sNy)*(nSx*nSy))
       LOGICAL DIFFERENT_MULTIPLE
 
-      INTEGER, PARAMETER :: debug = 1
+      INTEGER, PARAMETER :: debug = 0
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 
 #ifndef ALLOW_USE_MPI
@@ -353,7 +353,7 @@ C     myTime :: current time in model
       REAL*8 buffer2D((sNx+sNy)*(nSx*nSy))
       REAL*8 buffer3D((sNx*sNy)*(nSx*nSy), Nr)
       INTEGER total_valid, i, k, count
-      INTEGER, PARAMETER :: debug = 1
+      INTEGER, PARAMETER :: debug = 0
 #ifndef ALLOW_USE_MPI
       INTEGER, PARAMETER :: mpiMyId = 0   
 #else
@@ -570,7 +570,7 @@ C     myTime :: current time in model
       _RL myTime
       REAL*8 bufferSF((sNx*sNy)*(nSx*nSy))
       INTEGER total_valid, i, count
-      INTEGER, PARAMETER :: debug = 1
+      INTEGER, PARAMETER :: debug = 0
 
 #ifndef ALLOW_USE_MPI
       INTEGER, PARAMETER :: mpiMyId = 0   
@@ -817,7 +817,7 @@ C       final global array global_vec.
          INTEGER myThid
          REAL*8 sf_values((sNx*sNy)*(nSx*nSy))
          INTEGER num_valid, i, sf_index, sf_id, pid
-         INTEGER, PARAMETER :: debug = 1
+         INTEGER, PARAMETER :: debug = 0
          CHARACTER*(MAX_LEN_MBUF) msgBuf
 C------------------------------------------------------------------------------|
 C------------------------------------------------------------------------------|

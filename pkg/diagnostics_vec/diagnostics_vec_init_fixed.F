@@ -35,7 +35,7 @@ C     i, j, k, l, bi, bj, fld :: iterables
       INTEGER xSize, ySize
       INTEGER i, j, k, l, bi, bj, fld, counter, pid
       INTEGER vec_id, sf_id
-      INTEGER, PARAMETER :: debug = 1
+      INTEGER, PARAMETER :: debug = 0
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 #ifndef ALLOW_USE_MPI
       INTEGER, PARAMETER :: mpiMyId = 0
@@ -297,7 +297,7 @@ C     !INPUT PARAMETERS:
 
 C     !LOCAL VARIABLES:     
       INTEGER counter, i, j, bi, bj
-      INTEGER, PARAMETER :: debug = 1
+      INTEGER, PARAMETER :: debug = 0
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 
 #ifndef ALLOW_USE_MPI
@@ -337,7 +337,7 @@ C              Fourth row contains tile bi's
                vec_sub_local_ij(vec_id, 3, counter) = bi
                vec_sub_local_ij(vec_id, 4, counter) = bj
 
-        if ((debug .eq. 1).and.(counter.ge.830)) then
+        if (debug .eq. 1) then
         WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I5,A,I5,A,I5,A)') 
      &      "vec_sub_local_ij(",
      &      vec_id,",:,", counter,",) = (",i,',',j,",",bi,",",bj,")"
@@ -349,7 +349,7 @@ C              Save the mask index for this processor
                vec_mask_ind_list(vec_id,mpiMyId+1,counter) = 
      &           vec_subMask(vec_id,i,j,bi,bj)
 
-        if ((debug .eq. 1).and.(vec_id.eq.1).and.(counter.ge.830)) then
+        if ((debug .eq. 1).and.(vec_id.eq.1)) then
         WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I10)') 
      &   "vec_mask_ind_list(",vec_id,",",mpiMyId+1,',',
      &    counter,") = ",vec_mask_ind_list(vec_id,mpiMyId+1,counter)
@@ -423,7 +423,7 @@ C     !INPUT PARAMETERS:
 
 C     !LOCAL VARIABLES:     
       INTEGER counter, i, j, bi, bj
-      INTEGER, PARAMETER :: debug = 1
+      INTEGER, PARAMETER :: debug = 0
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 
 #ifndef ALLOW_USE_MPI
@@ -463,7 +463,7 @@ C              Fourth row contains tile bi's
                sf_sub_local_ij(sf_id, 3, counter) = bi
                sf_sub_local_ij(sf_id, 4, counter) = bj
 
-      if ((debug .eq. 1).and.(counter.ge.830)) then
+      if (debug .eq. 1) then
       WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I5,A,I5,A,I5,A)') 
      &      "sf_sub_local_ij(",
      &      sf_id,",:,", counter,",) = (",i,',',j,",",bi,",",bj,")"
@@ -474,7 +474,7 @@ C              Fourth row contains tile bi's
               sf_mask_ind_list(sf_id,mpiMyId+1,counter) = 
      &           sf_subMask(sf_id,i,j,bi,bj)
 
-      if ((debug .eq. 1).and.(sf_id.eq.1).and.(counter.ge.830)) then
+      if ((debug .eq. 1).and.(sf_id.eq.1)) then
       WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I10)') 
      &   "sf_mask_ind_list(",sf_id,",",mpiMyId+1,',',
      &    counter,") = ",sf_mask_ind_list(sf_id,mpiMyId+1,counter)

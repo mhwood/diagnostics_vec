@@ -1,6 +1,6 @@
 
-pkg/diagnostics_vec – Targeted I/O
-===============================================
+pkg/diagnostics_vec – Targeted Output
+=====================================
 
 Introduction
 ------------
@@ -23,13 +23,16 @@ Key Subroutines and Parameters
 ------------------------------
 
 The diagnostics_vec package rests on three fundamental routines: 
-1. ``identify_vec_points``
-(defined within :filelink:`diagnostics_vec_init_fixed.F <pkg/diagnostics_vec/diagnostics_vec_init_fixed.F>`) 
+
+1. ``identify_vec_points`` (defined within :filelink:`diagnostics_vec_init_fixed.F <pkg/diagnostics_vec/diagnostics_vec_init_fixed.F>`) 
+
 2. ``set_subfields`` (defined within :filelink:`diagnostics_vec_prepare_subfield.F <pkg/diagnostics_vec/diagnostics_vec_prepare_subfield.F>`.) 
+
 3. ``vec_master_proc_tasks`` (defined within :filelink:`diagnostics_vec_output.F <pkg/diagnostics_vec/diagnostics_vec_output.F>`.) 
+
 Note that these routines are for the vector masks, and there are corresponding routines for surface masks.
 
-:filelink:`diagnostics_vec_init_fixed.F <pkg/diagnostics_vec/diagnostics_vec_init_fixed.F>`:
+:filelink:`identify_vec_points <pkg/diagnostics_vec/diagnostics_vec_init_fixed.F>`:
 This is the main user interface routine to the
 diagnostics package. This routine will increment the specified
 diagnostic quantity with a field sent through the argument list.
@@ -39,38 +42,48 @@ reference lists that are used at each time step to organize and collect
 requested diagnostics at specific locations:  
 
 ::
-            vec_sub_local_ij(nVEC_mask, 4, sNx + sNy)
-	    vec_numPnts_allproc(nVEC_mask, nPx*nPy)
-            vec_mask_index_list(nVEC_mask, nPx*nPy, sNx + sNy)
+
+   vec_sub_local_ij(nVEC_mask, 4, (sNx+sNy)*(sNx*sNy))
+   vec_numPnts_allproc(nVEC_mask, nPx*nPy)
+   vec_mask_index_list(nVEC_mask, nPx*nPy, (sNx+sNy)*(sNx*sNy))
+
 
 The first list, ``vec_sub_local_ij``, keeps a sequential record of the locations of each
 model diagnostic on each tile. For example, the 11th point along the 7th vector mask is found
 at 
 
 ::
-            i = vec_sub_local_ij(7, 1, 11)
-            j = vec_sub_local_ij(7, 2, 11)
+
+   i = vec_sub_local_ij(7, 1, 11)
+   j = vec_sub_local_ij(7, 2, 11)
+
+
 on subtile 
+
 ::
-            bi = vec_sub_local_ij(7, 3, 11)
-            bj = vec_sub_local_ij(7, 4, 11)
+
+   bi = vec_sub_local_ij(7, 3, 11)
+   bj = vec_sub_local_ij(7, 4, 11)
+
 
 This list is used at each timestep to collect the requested diagnostics at the mask-defined locations without looping through the entire domain. 
 
 The second list, ``vec_numPnts_allproc``, keeps a record of the number of mask points for each processing tile, and is accessed at each timestep, as described below. By looping over only the known number of points, a loopover the entire domain is avoided.
 
 :filelink:`set_subfields <pkg/diagnostics_vec/diagnostics_vec_prepare_subfield.F>`:
-The ``set_subfields`` routine collects the requested model diagnostics for each mask provided. This step uses the ``vec_sub_local_ij`` and ``vec_numPnts_allproc`` references created above to organize the desried diagnostics. At each timestep (as seen by ``do_the_model_io.F``), the routine loops through the number of points the processing tile contains (accessed from ``vec_numPnts_allproc``), get the coordinates within the subtile (accessed from ``vec_sub_local_ij``) and stores these values in an ordered list. These values continue to be stored and incremented until the output time is reached.
+The ``set_subfields`` routine collects the requested model diagnostics for each mask provided. This step uses the ``vec_sub_local_ij`` and ``vec_numPnts_allproc`` references created above to organize the desired diagnostics. At each timestep (as seen by ``do_the_model_io.F``), the routine loops through the number of points the processing tile contains (accessed from ``vec_numPnts_allproc``), get the coordinates within the subtile (accessed from ``vec_sub_local_ij``) and stores these values in an ordered list. These values continue to be stored and incremented until the output time is reached.
 
 
 :filelink:`vec_master_proc_tasks <pkg/diagnostics_vec/diagnostics_vec_output.F>`:
-This is the main routine which prepares the variables for output and stores them in a file. The routine starts with the main processing node storing its values (if it has any) in a global array. Here, the locations of the points within the output array are given by the ``vec_mask_index_list`` array. If MPI is not used, then then this processing node will already have all of the information it needs for output. If MPI is used, then the main processing node needs to collect the information from all of the other nodes before it can output the field. At this point, the organizational information in vec_mask_index_list is critical because it describes where the data from each node should be placed in the global array. For example, the 5th processing tile may only have points 12-15 of the 6th mask, such that 
+This is the main routine which prepares the variables for output and stores them in a file. The routine starts with the main processing node storing its values (if it has any) in a global array. Here, the locations of the points within the output array are given by the ``vec_mask_index_list`` array. If MPI is not used, then then this processing node will already have all of the information it needs for output. If MPI is used, then the main processing node needs to collect the information from all of the other nodes before it can output the field. At this point, the organizational information in ``vec_mask_index_list`` is critical because it describes where the data from each node should be placed in the global array. For example, the 5th processing tile may only have points 12-15 of the 6th mask, such that 
 
 ::
-            vec_mask_index_list(6, 5, 1) = 12
-            vec_mask_index_list(6, 5, 2) = 13
-            vec_mask_index_list(6, 5, 3) = 14
-            vec_mask_index_list(6, 5, 4) = 15
+
+   vec_mask_index_list(6, 5, 1) = 12
+   vec_mask_index_list(6, 5, 2) = 13
+   vec_mask_index_list(6, 5, 3) = 14
+   vec_mask_index_list(6, 5, 4) = 15
+
 
 Once the main node has received information from all other nodes, it can output the data into a file.
 
@@ -78,11 +91,17 @@ Once the main node has received information from all other nodes, it can output 
 Usage Notes
 -----------
 To use the ``diagnostics_vec`` package, the following steps must be taken:
-    1. Enable the package in ``packages.conf``.
-    2. Add the compile time ``DIAGNOSTICS_VEC_SIZE.h`` file.
-    2. Turn the ``useDiagnostics_vec`` flag in ``data.pkg`` to ``.TRUE.``
-    3. Generate "masks" where diagnostics will be generated
-    4. Generate a ``data.diagnostics_vec`` parameter file
+
+1. Enable the package in ``packages.conf``
+
+2. Add the compile time ``DIAGNOSTICS_VEC_SIZE.h`` file
+
+3. Turn the ``useDiagnostics_vec`` flag in ``data.pkg`` to ``.TRUE.``
+
+4. Generate "masks" where diagnostics will be generated
+
+5. Generate a ``data.diagnostics_vec`` parameter file
+
 
 Worked Examples
 ---------------
@@ -179,6 +198,7 @@ The following diagnostics are standard model variables and are available in any 
    +----------------+------------+---------------------------------------------------------------------+
 
 
+
 External Forcing Diagnostics
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -202,10 +222,63 @@ The following diagnostics are available in configurations with the use of `pkg/e
    +----------------+------------+---------------------------------------------------------------------+
    |                | WSPEED     | surface wind speed                                                  |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | EVAP       | evaporation                                                         |
+   |                | ATEMP      | surface air temperature                                             |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | PRECIP     | total precipitation                                                 |
+   |                | AQH        | surface specific humidity                                           |
    +----------------+------------+---------------------------------------------------------------------+
-   |                | RUNOFF     | river and glacier runoff                                            |
+   |                | HS         | sensible heat flux into the ocean                                   |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | HL         | latent heat flux into the ocean                                     |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | EVAP       | evaporation.                                                        |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | PRECIP     | precipitation                                                       |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | SNOWPREC   | snow precipitation.                                                 |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | RUNOFF     | runoff                                                              |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | SWDOWN     | downward shortwave radiation                                        |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | LWDOWN     | downward longwave radiation                                         |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | APRESS     | atmospheric pressure field.                                         |
    +----------------+------------+---------------------------------------------------------------------+
 
+
+Sea Ice Diagnostics
+~~~~~~~~~~~~~~~~~~~
+
+The following diagnostics are available in configurations with the use of `pkg/seaice`.
+   +----------------+------------+---------------------------------------------------------------------+
+   | Boundary Type  | Variable   | Description                                                         |
+   +================+============+=====================================================================+
+   | `Surface (2D)` | UICE       | sea ice velocity in the +x direction                                |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | VICE       | sea ice velocity in the +y direction                                |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | AREA       | sea ice fractional ice-covered area                                 |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | HEFF       | sea ice effective ice thickness                                     |
+   +----------------+------------+---------------------------------------------------------------------+
+   |                | HSNOW      | sea ice effective snow thickness                                    |
+   +----------------+------------+---------------------------------------------------------------------+
+
+
+Passive Tracer Diagnostics
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following diagnostics are available in configurations with the use of `pkg/ptracers`.
+   +----------------+------------+---------------------------------------------------------------------+
+   | Boundary Type  | Variable   | Description                                                         |
+   +================+============+=====================================================================+
+   | `Vector (3D)`  | PTRACEXX   | passive tracer XX where XX is between 01 and 20                     |
+   +----------------+------------+---------------------------------------------------------------------+
+
+Adding Additional Diagnostics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The diagnostics_vec package can theoretically output any model variables as long as the variables have been 
+implemented in the incrementation routine. To add output capabilities to diagnostics_vec, new variables can be
+added to the `set_subfield` subroutine within :filelink:`diagnostics_vec_prepare_subfield.F <pkg/diagnostics_vec/diagnostics_vec_prepare_subfield.F>`.
+When adding new variables, ensure that the associated header files are added to the subroutine header to include (define) the variables locally.
