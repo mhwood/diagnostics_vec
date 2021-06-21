@@ -50,8 +50,8 @@ C     This is where the input masks are stored after they are read in
       _RL sf_subMask(nSURF_mask,1-Olx:sNx+Olx,1-Oly:sNy+Oly,nSx,nSy)
 
 C     These store the rows/cols of valid mask locations within the masks
-      INTEGER vec_sub_local_ij(nVEC_mask, 4, sNx + sNy)
-      INTEGER sf_sub_local_ij(nSURF_mask, 4, sNx * sNy)
+      INTEGER vec_sub_local_ij(nVEC_mask, 4, (sNx+sNy)*(nSx*nSy))
+      INTEGER sf_sub_local_ij(nSURF_mask, 4, (sNx*sNy)*(nSx*nSy))
 
 C     These arrays map the above counters to ordered points in the mask
       INTEGER vec_mask_ind_list(nVEC_mask,nPx*nPy,(sNx+sNy)*(nSx*nSy))

@@ -26,25 +26,24 @@ C     !USES:
 #include "DIAGNOSTICS_VEC.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
-C     myThid ::  my Thread Id number
       _RL myTime
       INTEGER myThid
       INTEGER myIter
 
 C     !LOCAL VARIABLES:
-       CHARACTER*(MAX_LEN_MBUF) msgBuf
-       INTEGER i,j, k, iG, jG, bi, bj, fld2D, fld3D, fld
-       INTEGER fldSF
-       INTEGER vec_id, sf_id
-       INTEGER tag
-       INTEGER total_valid
-       REAL*8 buffer2D((sNx+sNy)*(nSx*nSy))
-       REAL*8 buffer3D((sNx+sNy)*(nSx*nSy), Nr)
-       REAL*8 bufferSF((sNx*sNy)*(nSx*nSy))
+      
+      INTEGER i,j, k, bi, bj, fld2D, fld3D, fld
+      INTEGER fldSF
+      INTEGER vec_id, sf_id
+      INTEGER tag
+      INTEGER total_valid
+      REAL*8 buffer2D((sNx+sNy)*(nSx*nSy))
+      REAL*8 buffer3D((sNx+sNy)*(nSx*nSy), Nr)
+      REAL*8 bufferSF((sNx*sNy)*(nSx*nSy))
+      LOGICAL DIFFERENT_MULTIPLE
 
-       INTEGER, PARAMETER :: debug = 1
-
-       LOGICAL DIFFERENT_MULTIPLE
+      INTEGER, PARAMETER :: debug = 1
+      CHARACTER*(MAX_LEN_MBUF) msgBuf
 
 #ifndef ALLOW_USE_MPI
       INTEGER, PARAMETER :: mpiMyId = 0
@@ -835,7 +834,7 @@ C------------------------------------------------------------------------------|
 C          Extracting vec_index from list for SF point i in process pid
            sf_index = sf_mask_ind_list(sf_id,pid+1,i)
 
-           if ((debug .eq. 1).and.(sf_id .eq. 1)) then
+           if ((debug .eq. 1).and.(sf_id .eq. 1).and.(i.ge.830)) then
             WRITE(msgBuf,'(A,F10.3,A,I5,A,I5,A)') "  Passing surf = ",
      &      sf_values(i)," at location ",i,
      &      " from fldOnMsk_SFavg to location ",sf_index, " on mask 1"

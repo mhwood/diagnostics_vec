@@ -256,8 +256,8 @@ C       Save unique tag for field and incremement tag for next field to be extra
 C          i,j indices with respect to process' sub mask for open boundary points (Note: all processes have their own declared sf_sub_local_ij)
            j = sf_sub_local_ij(sf_id,2,loc_count)
            i = sf_sub_local_ij(sf_id,1,loc_count)
-           bj = sf_sub_local_ij(vec_id,4,loc_count)
-           bi = sf_sub_local_ij(vec_id,3,loc_count)
+           bj = sf_sub_local_ij(sf_id,4,loc_count)
+           bi = sf_sub_local_ij(sf_id,3,loc_count)
 
 C          Comparing strings provided by user to fields in diagnostics_vec
 C          First part of list is for 2D surface fields
@@ -334,13 +334,14 @@ C          Variables from the EXF package:
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'USTRESS') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
      &                                        ustress(i,j,bi,bj)
-C        if (debug .eq. 1) then
-C        WRITE(msgBuf,'(A,I5,A,I5,A,F12.3)') 
-C     &           "sf_id= 1, i=",i,"j=",j," k=1, ustress=",
-C     &            ustress(i,j,bi,bj)
-C        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-C     &                     SQUEEZE_RIGHT, myThid )
-C        endif
+        if ((debug .eq. 1).and.(loc_count.ge.830)) then
+        WRITE(msgBuf,'(A,I5,A,I5,A,I5,A,I5,A,I5,A,F12.3)') 
+     &           "sf_id= 1, i=",i," j=",j," bi =",bi," bj=",bj,
+     &           " counter =",loc_count,
+     &            " ustress=", ustress(i,j,bi,bj)
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+        endif
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'VSTRESS') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
      &                                        vstress(i,j,bi,bj)
