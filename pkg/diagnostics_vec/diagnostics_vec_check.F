@@ -20,6 +20,7 @@ C     !USES:
       IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
+#include "EESUPPORT.h"
 #include "PARAMS.h"
 #include "DIAGNOSTICS_VEC.h"
 
@@ -29,9 +30,13 @@ C     myThid   :: my Thread Id number
 
 C     !LOCAL VARIABLES:
 C     msgBuf   :: Informational/error message buffer
+      INTEGER vec_id, pid
       INTEGER errCount
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER, PARAMETER :: debug = 0
+#ifndef ALLOW_USE_MPI
+      INTEGER, PARAMETER :: mpiMyId = 0
+#endif
 CEOP
 C----&------------------------------------------------------------------xxxxxxx|
 CBOC
@@ -70,7 +75,28 @@ C      MPI SEND/RECV calls in diagnostics_vec_init_fixed
             CALL PRINT_ERROR( msgBuf, myThid )
             CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT , 1)
-      ENDIF    
+      ENDIF
+
+C ---  The maximum size of the lateral masks is sNx+sNy per tile.
+C ---  A compile time options could be implemented to allow control over this feature.
+      DO vec_id=1,nVEC_mask
+      IF (vec_numPnts_allproc(vec_id, mpiMyId+1).GT.(sNx+sNy)) THEN
+            errCount = errCount +1
+            WRITE(msgBuf,'(A,A,A,I5)')
+     &      'diagnostics_vec mask ',vec_fnames(nVEC_mask),
+     &      ' has too many points on tile ',vec_id
+            CALL PRINT_ERROR( msgBuf, myThid )
+            CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT , 1)
+            WRITE(msgBuf,'(A,I5,A,I5)')
+     &      '    max points per tile = sNx+sNy = ',
+     &      sNx+sNy,
+     &      ' < ',vec_numPnts_allproc(vec_id, mpiMyId+1)
+            CALL PRINT_ERROR( msgBuf, myThid )
+            CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT , 1)
+      ENDIF        
+      ENDDO
 
 C ---  If there were any errors, kill the run
       IF ( errCount.GE.1 ) THEN

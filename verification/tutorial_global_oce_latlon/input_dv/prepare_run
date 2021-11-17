@@ -1,0 +1,9 @@
+#! /usr/bin/env bash
+
+#-- link the input files from the regular tutorial dir
+ln -s ../input/* .
+
+#-- link the code files from the regular tutorial dir
+cd ../code_dv
+ln -s ../code/* .
+cd ../input_dv
