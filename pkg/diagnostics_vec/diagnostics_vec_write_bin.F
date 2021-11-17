@@ -65,6 +65,9 @@ CBOC
        logical exists
        integer LEN, i
 
+       logical combineMaskTimeLevels
+       combineMaskTimeLevels = .TRUE.
+
        LEN = 1
        dir = "./"
 
@@ -77,7 +80,7 @@ C       Field dimension: 2
 C       -----------------------------------------------------------------------
          call VEC_R8_to_R4(bufferR4_2D, bufferR4_3D,2,fld,vec_id)
          call CREATE_FILENAME_VEC(dir, vec_flds2D(fld,vec_id), vec_id,
-     &                      filename,0, myIter)
+     &                      filename,myIter)
          IF (combineMaskTimeLevels) then
 C         Writing all time levels into a single binary file
           INQUIRE (IOLENGTH = LEN) bufferR4_2D(1:total_valid)
@@ -90,7 +93,8 @@ C         If file already exists, set status as 'old'. Otherwise, 'replace'
            open(1, FILE=filename, STATUS='REPLACE', ACCESS='DIRECT',
      &          RECL = LEN )
           endif
-          write(1, REC=time_level) bufferR4_2D(1:total_valid)
+          write(1, REC=vec_time_levels(vec_id,1)) 
+     &                       bufferR4_2D(1:total_valid)
          ELSE
 C         Write each time level into its own binary file
           open(1, FILE=filename, FORM="unformatted",ACCESS='STREAM')
@@ -106,8 +110,8 @@ C       Field dimension: 3
 C       -----------------------------------------------------------------------
          call VEC_R8_to_R4(bufferR4_2D, bufferR4_3D,3,fld,vec_id)
          call CREATE_FILENAME_VEC(dir, vec_flds3D(fld,vec_id), vec_id, 
-     &                      filename,0, myIter)
-         IF (combineMaskTimeLevels) then
+     &                      filename,myIter)
+
 C        Writing all time levels into a single binary file
           INQUIRE (IOLENGTH = LEN) bufferR4_3D(1:total_valid,
      &          1:vec_levels3D(fld,vec_id))
@@ -120,13 +124,9 @@ C         If file already exists, set status as 'old'. Otherwise, 'replace'
            open( 1, FILE=filename, STATUS='REPLACE', ACCESS='DIRECT',
      &          RECL =  LEN)
           endif
-          write(1, REC=time_level) bufferR4_3D(1:total_valid,
-     &          1:vec_levels3D(fld,vec_id))
-         ELSE
-C         Write each time level into its own binary file
-          open(1, FILE=filename, FORM="unformatted",ACCESS='STREAM')
-          write(1) bufferR4_3D(1:total_valid,1:vec_levels3D(fld,vec_id))
-         ENDIF
+          write(1, REC=vec_time_levels(vec_id,1)) 
+     &          bufferR4_3D(1:total_valid, 1:vec_levels3D(fld,vec_id))
+         
          close(1)
 
         ENDIF
@@ -140,8 +140,8 @@ C       File precision: 64
 C       Field dimension: 2
 C       -----------------------------------------------------------------------
          call CREATE_FILENAME_VEC(dir, vec_flds2D(fld,vec_id), vec_id,
-     &                      filename,0, myIter)
-         IF (combineMaskTimeLevels) then
+     &                      filename,myIter)
+
           INQUIRE (IOLENGTH = LEN) global_vec2D(1:total_valid)
           INQUIRE (FILE=filename, EXIST=exists)
 C         If file already exists, set status as 'old'. Otherwise, 'replace'
@@ -153,11 +153,9 @@ C         If file already exists, set status as 'old'. Otherwise, 'replace'
      &          RECL = LEN )
           endif
 
-          write(1, REC=time_level) global_vec2D(1:total_valid)
-         ELSE
-          open(1, FILE=filename, FORM="unformatted",ACCESS='STREAM')
-          write(1) global_vec2D(1:total_valid)
-         ENDIF
+          write(1, REC=vec_time_levels(vec_id,1)) 
+     &                 global_vec2D(1:total_valid)
+
          close(1)
 
 
@@ -167,9 +165,8 @@ C       File precision: 64
 C       Field dimension: 3
 C       -----------------------------------------------------------------------
          call CREATE_FILENAME_VEC(dir, vec_flds3D(fld,vec_id), vec_id,
-     &                      filename,0, myIter)
+     &                      filename,myIter)
 
-         IF (combineMaskTimeLevels) then
           INQUIRE (IOLENGTH = LEN) global_vec3D(1:total_valid,
      &                                   1:vec_levels3D(fld,vec_id))
           INQUIRE (FILE=filename, EXIST=exists)
@@ -181,23 +178,8 @@ C         If file already exists, set status as 'old'. Otherwise, 'replace'
            open( 1, FILE=filename, STATUS='REPLACE', ACCESS='DIRECT',
      &          RECL = LEN)
           endif
-          write(1, REC=time_level) global_vec3D(1:total_valid,
-     &                                      1:vec_levels3D(fld,vec_id))
-          if (debug .eq. 1) then
-C          Reading back from binary file for debugging
-           do i=1, time_level
-            read(1, REC=i) temp(1:total_valid,
-     &                                    1:vec_levels3D(fld,vec_id))
-            print*,"time level:",i
-            print *,"TEMP: ",temp(1:total_valid,
-     &                                    1:vec_levels3D(fld,vec_id))
-           enddo
-          endif
-         ELSE
-          open(1, FILE=filename, FORM="unformatted",ACCESS='STREAM')
-          write(1) global_vec3D(1:total_valid,
-     &                          1:vec_levels3D(fld,vec_id))
-         ENDIF
+          write(1, REC=vec_time_levels(vec_id,1)) 
+     &          global_vec3D(1:total_valid, 1:vec_levels3D(fld,vec_id))
 
          close(1)
 
@@ -230,6 +212,7 @@ C     !USES:
 #include "EEPARAMS.h"
 #include "EESUPPORT.h"
 #include "DIAGNOSTICS_VEC.h"
+#include "PARAMS.h"
 
 C     !INPUT PARAMETERS:
        INTEGER total_valid, sf_id, fld, myIter
@@ -271,6 +254,7 @@ CBOC
        integer, parameter :: debug = 0
        logical exists
        integer LEN, i
+       integer start_value
 
        LEN = 1
        dir = "./"
@@ -283,8 +267,8 @@ C       Field dimension: 2
 C       -----------------------------------------------------------------------
          call SF_R8_to_R4(bufferR4_SF,fld,sf_id)
          call CREATE_FILENAME_SF(dir, sf_flds(fld,sf_id), sf_id,
-     &                      filename,0, myIter)
-         IF (combineMaskTimeLevels) then
+     &                      filename, myIter)
+
 C         Writing all time levels into a single binary file
           INQUIRE (IOLENGTH = LEN) bufferR4_SF(1:total_valid)
           INQUIRE (FILE=filename, EXIST=exists)
@@ -296,12 +280,8 @@ C         If file already exists, set status as 'old'. Otherwise, 'replace'
            open(1, FILE=filename, STATUS='REPLACE', ACCESS='DIRECT',
      &          RECL = LEN )
           endif
-          write(1, REC=time_level) bufferR4_SF(1:total_valid)
-         ELSE
-C         Write each time level into its own binary file
-          open(1, FILE=filename, FORM="unformatted",ACCESS='STREAM')
-          write(1) bufferR4_SF(1:total_valid)
-         ENDIF
+         write(1, REC=sf_time_levels(sf_id,1)) 
+     &         bufferR4_SF(1:total_valid)
          close(1)
 
        ELSE IF (vec_filePrec .eq. 64) then
@@ -311,8 +291,8 @@ C       File precision: 64
 C       Field dimension: 2
 C       -----------------------------------------------------------------------
          call CREATE_FILENAME_SF(dir, sf_flds(fld,sf_id), sf_id,
-     &                      filename,0, myIter)
-         IF (combineMaskTimeLevels) then
+     &                      filename,myIter)
+
           INQUIRE (IOLENGTH = LEN) global_SF(1:total_valid)
           INQUIRE (FILE=filename, EXIST=exists)
 C         If file already exists, set status as 'old'. Otherwise, 'replace'
@@ -324,11 +304,7 @@ C         If file already exists, set status as 'old'. Otherwise, 'replace'
      &          RECL = LEN )
           endif
 
-          write(1, REC=time_level) global_SF(1:total_valid)
-         ELSE
-          open(1, FILE=filename, FORM="unformatted",ACCESS='STREAM')
-          write(1) global_SF(1:total_valid)
-         ENDIF
+         write(1, REC=sf_time_levels(sf_id,1)) global_SF(1:total_valid)
          close(1)
 
        ENDIF
@@ -350,17 +326,17 @@ C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 
        SUBROUTINE CREATE_FILENAME_VEC(dir, fldNm, vec_id, filename,
-     &                            is_child, myIter)
+     &                            myIter)
 c       Creating filenames for all binary files.
       IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "EESUPPORT.h"
 #include "DIAGNOSTICS_VEC.h"
-
+#include "PARAMS.h"
 
 C     !INPUT PARAMETERS:
-       integer is_child, vec_id, myIter
+       integer vec_id, myIter
        character*50 filename
        character*8 fldNm
        character*2 dir
@@ -376,19 +352,12 @@ C     !LOCAL VARIABLES:
 #endif
        character*11 str_time
        character*2 str_vec
-       character*8 str_iter
+       character*10 str_iter
        integer len, count, mask_count
+
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 
-
-c       If creating a filename for a child process, create a name in the format: T.001.002.bin
-c       T for temp or mask for mask
-c       001 for index 1 in x axis
-c       002 for index 2 in x axis
-       write(str_vec, "(I2.2)") vec_id
-       write(str_iter, "(I8.8)") myIter
-       write(str_time, "(F11.0)") myTime
 
 C       Counting number of valid characters to trim trailing whitespaces
         count = 0
@@ -405,22 +374,14 @@ C       Counting number of valid characters to trim trailing whitespaces
           ENDIF
         ENDDO
 
-       if (is_child .eq. 1) then
-         write(str_px, "(I3.3)") mpiPx
-         write(str_py, "(I3.3)") mpiPy
-         write(filename, "(8A)") dir, fldNm(1:count),
-     &                   "_avg.",str_iter,str_px, ".", str_py, ".bin"
-       else
-
-         IF (combineMaskTimeLevels) then
+         IF (vec_iters_per_file(vec_id).eq.0) then
           write(filename, "(5A)") vec_fnames(vec_id)(1:mask_count-4), 
      &                            "_",fldNm(1:count),".bin"
          ELSE
+          write(str_iter, "(I10.10)") vec_time_levels(vec_id,2)
            write(filename, "(7A)") vec_fnames(vec_id)(1:mask_count-4), 
-     &                   "_",fldNm(1:count),"_",str_iter,".bin"
+     &                   "_",fldNm(1:count),".",str_iter,".bin"
          ENDIF
-
-       end if
 
        END
 C----&------------------------------------------------------------------xxxxxxx|
@@ -439,17 +400,18 @@ C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 
        SUBROUTINE CREATE_FILENAME_SF(dir, fldNm, sf_id, filename,
-     &                            is_child, myIter)
+     &                            myIter)
 c       Creating filenames for all binary files.
       IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "EESUPPORT.h"
 #include "DIAGNOSTICS_VEC.h"
+#include "PARAMS.h"
 
 
 C     !INPUT PARAMETERS:
-       integer is_child, sf_id, myIter
+       integer sf_id, myIter
        character*50 filename
        character*8 fldNm
        character*2 dir
@@ -465,8 +427,9 @@ C     !LOCAL VARIABLES:
 #endif
        character*11 str_time
        character*2 str_vec
-       character*8 str_iter
+       character*10 str_iter
        integer len, count, mask_count
+
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 
@@ -475,8 +438,8 @@ c       If creating a filename for a child process, create a name in the format:
 c       T for temp or mask for mask
 c       001 for index 1 in x axis
 c       002 for index 2 in x axis
+
        write(str_vec, "(I2.2)") sf_id
-       write(str_iter, "(I8.8)") myIter
        write(str_time, "(F11.0)") myTime
 
 C       Counting number of valid characters to trim trailing whitespaces
@@ -494,22 +457,15 @@ C       Counting number of valid characters to trim trailing whitespaces
           ENDIF
         ENDDO
 
-       if (is_child .eq. 1) then
-         write(str_px, "(I3.3)") mpiPx
-         write(str_py, "(I3.3)") mpiPy
-         write(filename, "(8A)") dir, fldNm(1:count),
-     &                   "_avg.",str_iter,str_px, ".", str_py, ".bin"
-       else
-
-         IF (combineMaskTimeLevels) then
+         IF (sf_iters_per_file(sf_id).eq.0) then
           write(filename, "(5A)") sf_fnames(sf_id)(1:mask_count-4), 
      &                            "_",fldNm(1:count),".bin"
          ELSE
-           write(filename, "(7A)") sf_fnames(sf_id)(1:mask_count-4), 
-     &                   "_",fldNm(1:count),"_",str_iter,".bin"
-         ENDIF
+            write(str_iter, "(I10.10)") sf_time_levels(sf_id,2)
 
-       end if
+           write(filename, "(7A)") sf_fnames(sf_id)(1:mask_count-4), 
+     &                   "_",fldNm(1:count),".",str_iter,".bin"
+         ENDIF
 
        END
 C----&------------------------------------------------------------------xxxxxxx|

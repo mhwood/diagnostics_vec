@@ -240,6 +240,15 @@ C         Processes 0 receives all of the points
           ENDDO
          ENDIF
 
+         if (vec_iters_per_file(vec_id).ne.0) then
+         if (vec_time_levels(vec_id,1).eq.vec_iters_per_file(vec_id))
+     &    then
+            vec_time_levels(vec_id,1) = 0
+            vec_time_levels(vec_id,2) = myIter+1
+         endif
+         endif
+         vec_time_levels(vec_id,1) = vec_time_levels(vec_id,1) + 1
+
 C       !ENDDO for vec_id
         ENDDO
 
@@ -284,17 +293,22 @@ C           Send R8 array to master process
 C         !ENDIF for mpiMyId .eq. 0
          ENDIF
 
+         if (sf_iters_per_file(sf_id).ne.0) then
+         if (sf_time_levels(sf_id,1).eq.sf_iters_per_file(sf_id))
+     &    then
+            sf_time_levels(sf_id,1) = 0
+            sf_time_levels(sf_id,2) = myIter+1
+         endif
+         endif
+         sf_time_levels(sf_id,1) = sf_time_levels(sf_id,1) + 1
+
 C       !ENDDO for sf_id
         ENDDO
 
 C      Set averages back to zero
        CALL SET_TO_INI_STATE(myThid)
 
-C      Incrementing number of time levels passed
-       time_level = time_level + 1
-
 C     !ENDIF for end of averaging period
-
       ENDIF 
 
 C      Move on to next time step

@@ -348,6 +348,11 @@ C          Variables from the EXF package:
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'WSPEED') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
      &                                        wspeed(i,j,bi,bj)
+#ifdef ATMOSPHERIC_LOADING
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'APRESS') then
+                fldOnMsk_SF(sf_id,fldSF,loc_count) =
+     &                                        apressure(i,j,bi,bj)
+#endif
 #ifdef ALLOW_ATM_TEMP
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'ATEMP') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
@@ -391,11 +396,7 @@ C          Variables from the EXF package:
      &                                        lwdown(i,j,bi,bj)
 #endif 
 
-#ifdef ATMOSPHERIC_LOADING
-             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'APRESS') then
-                fldOnMsk_SF(sf_id,fldSF,loc_count) =
-     &                                        apressure(i,j,bi,bj)
-#endif
+
 
 C Fifth part is for variables from the sea ice package
 #ifdef ALLOW_SEAICE

@@ -62,9 +62,6 @@ C     |                   (chosen by user)                               |
 C     | - nml_fieldsSF :: surface field names for ocean state and        |
 C     |                   flux variables                                 |
 C     | - nml_filePrec :: precision of output variables (32 or 64)       |
-C     | - nml_combMaskTimeLevels :: Logical for either writing all time  |
-C     |                             levels to binary file or write in    |
-C     |                             separate binary files                |
 C     \==================================================================/
 
 #ifdef ALLOW_DIAGNOSTICS_VEC
@@ -81,19 +78,21 @@ C----&------------------------------------------------------------------xxxxxxx|
       CHARACTER*30 nml_sfFiles(nSURF_mask)
       CHARACTER*8 nml_fields2D(MAX_NFLDS, nVEC_mask)
       CHARACTER*8 nml_fields3D(MAX_NFLDS, nVEC_mask)
+      INTEGER nml_vec_iters_per_file(nVEC_mask)
+      INTEGER nml_sf_iters_per_file(nSURF_mask)
       INTEGER nml_levels3D(MAX_NFLDS, nVEC_mask)
       CHARACTER*8 nml_fieldsSF(MAX_NFLDS, nSURF_mask)
       INTEGER nml_filePrec, nml_debugLevel
-      LOGICAL nml_combMaskTimeLevels
 
       NAMELIST / DIAG_VEC_INPUT_VARS /
      &     nml_avgPeriod, nml_startTime, nml_endTime,
      &     nml_vecFiles,
      &     nml_sfFiles,
+     &     nml_vec_iters_per_file, nml_sf_iters_per_file,
      &     nml_fields2D,
      &     nml_fields3D, nml_levels3D,
      &     nml_fieldsSF,
-     &     nml_filePrec, nml_combMaskTimeLevels
+     &     nml_filePrec
     
 
       if (debug .eq. 1) then
@@ -109,16 +108,6 @@ C----&------------------------------------------------------------------xxxxxxx|
         endif
 
 C----&------------------------------------------------------------------xxxxxxx|
-C     Provide a weak warning if data.diagnostics_vec is found but
-C     useDiagnostics_vec is not activated in data.pkg
-C----&------------------------------------------------------------------xxxxxxx|
-
-      IF ( .NOT.useDiagnostics_vec ) THEN
-         CALL PACKAGES_UNUSED_MSG( 'useDiagnostics_vec', ' ', ' ' )
-        RETURN
-      ENDIF
-
-C----&------------------------------------------------------------------xxxxxxx|
 C   Initialize local variables and variables from DIAG_VEC_INPUT_VARS NAMELIST
 C   with default values
 C----&------------------------------------------------------------------xxxxxxx|
@@ -129,7 +118,6 @@ C----&------------------------------------------------------------------xxxxxxx|
       nml_endTime = startTime
       nml_avgPeriod = deltaT
       nml_filePrec = 64
-      nml_combMaskTimeLevels = .TRUE.
       nml_debugLevel = 0
 
       DO j=1, nVEC_mask
@@ -139,6 +127,7 @@ C----&------------------------------------------------------------------xxxxxxx|
           nml_levels3D(i,j) = 0
         ENDDO
         nml_vecFiles(j) = ' '
+        nml_vec_iters_per_file(j) = 0
       ENDDO
 
 
@@ -167,6 +156,7 @@ C ----  Surface section is here
           sf_flds(i,j) = ' '
         ENDDO
         sf_fnames(j) = ' '
+        nml_sf_iters_per_file(j) = 0
       ENDDO
 
 C----&------------------------------------------------------------------xxxxxxx|
@@ -207,6 +197,8 @@ C----&------------------------------------------------------------------xxxxxxx|
 
       DO vec_count=1, nVEC_mask
         vec_fnames(vec_count) = nml_vecFiles(vec_count)
+        vec_iters_per_file(vec_count) = 
+     &   nml_vec_iters_per_file(vec_count)
 
         DO i=1, MAX_NFLDS
           vec_flds2D(i,vec_count) = nml_fields2D(i,vec_count)
@@ -223,6 +215,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 
       DO sf=1, nSURF_mask
         sf_fnames(sf) = nml_sfFiles(sf)
+        sf_iters_per_file(sf) = nml_sf_iters_per_file(sf)
 
         DO i=1, MAX_NFLDS
           sf_flds(i,sf) = nml_fieldsSF(i,sf)
@@ -237,7 +230,6 @@ C----&------------------------------------------------------------------xxxxxxx|
       endTime_vec = nml_endTime
       vec_filePrec = nml_filePrec
       vec_debugLevel = nml_debugLevel
-      combineMaskTimeLevels = nml_combMaskTimeLevels
 
 
 C----&------------------------------------------------------------------xxxxxxx|

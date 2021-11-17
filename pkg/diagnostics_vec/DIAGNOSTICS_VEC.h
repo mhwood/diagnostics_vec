@@ -32,8 +32,19 @@ C     These tags keep labels for MPI SEND/RECV
       INTEGER vec_tags(nVEC_mask, 2, MAX_NFLDS)
       INTEGER sf_tags(nSURF_mask, 2, MAX_NFLDS)
 
+C     These indicate how many iterations to include in each output file
+C     The default (=0) will put all iterations into the same file
+      INTEGER vec_iters_per_file(nVEC_mask)
+      INTEGER sf_iters_per_file(nSURF_mask)
+
+C     These store the time levels for each mask 
+C     (keeps track of how to output when all iterations are not in same file)
+C     First column is the time_level
+C     Second column is the iteration used in the output name
+      INTEGER vec_time_levels(nVEC_mask,2)
+      INTEGER sf_time_levels(nSURF_mask,2)
+
 C     These are some i/o parameters
-      LOGICAL combineMaskTimeLevels
       INTEGER vec_filePrec
       INTEGER vec_debugLevel
 
@@ -43,7 +54,6 @@ C     These are times controlling when the averaging is done
       _RL endTime_vec
       _RL nTimeSteps_vec
       _RL time_passed
-      INTEGER time_level
 
 C     This is where the input masks are stored after they are read in
       _RL vec_subMask(nVEC_mask, 1-Olx:sNx+Olx,1-Oly:sNy+Oly,nSx,nSy)
@@ -92,16 +102,17 @@ C------------------------------------------------------------------------------|
 
       COMMON / DIAG_VEC_VARS_I /
      &     vec_levels3D, 
+     &     vec_iters_per_file, sf_iters_per_file,
      &     vec_sub_local_ij, sf_sub_local_ij,
      &     vec_mask_ind_list, sf_mask_ind_list,
      &     vec_numPnts_allproc, sf_numPnts_allproc,
      &     vec_nFlds2D, vec_nFlds3D, sf_nFlds, 
      &     vec_tags,sf_tags, 
-     &     vec_filePrec, time_level,
+     &     vec_filePrec,
+     &     vec_time_levels, sf_time_levels,
      &     vec_debugLevel
 
       COMMON / DIAG_VEC_VARS_C /
-     &     vec_flds2D, vec_flds3D, vec_fnames, sf_flds, sf_fnames,
-     &     combineMaskTimeLevels
+     &     vec_flds2D, vec_flds3D, vec_fnames, sf_flds, sf_fnames
 
 #endif /* ALLOW_DIAGNOSTICS_VEC */
