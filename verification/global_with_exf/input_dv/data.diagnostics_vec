@@ -67,6 +67,5 @@
 
 # requested surface output variables
  nml_fieldsSF(1:4,1) = 'USTRESS ','VSTRESS ','QNET    ','EMPMR   ',
- nml_combMaskTimeLevels = .TRUE.,
  nml_filePrec = 32,
  &
