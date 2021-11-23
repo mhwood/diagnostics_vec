@@ -36,25 +36,83 @@
  &DIAG_VEC_INPUT_VARS
 
 # averaging times
- nml_avgPeriod = 86400.,
- nml_startTime = 6220800000,
- nml_endTime = 6307200000.,
+ nml_startTime = 0,
+ nml_endTime = 1576800000.,
 
-# mask files names for the lateral variables
- nml_vecFiles(1) = 'equator_mask.bin',
 
-# mask files names for the surface variables
- nml_sfFiles(1) = 'south_pole_mask.bin',
+###############################################################
+# 4 sets of tests with the new pkg updates
 
-# requested 2D output variables
- nml_fields2D(1,1) = 'ETAN    ',
 
-# requested 3D output variables
- nml_fields3D(1:4,1) = 'THETA   ','SALT   ','UVEL    ','VVEL    ',
- nml_levels3D(1:4,1) =   15, 15, 15, 15,
+#################################################################
+# (control): each timestep output, each variable in a single file
 
-# requested surface output variables
- nml_fieldsSF(1:5,1) = 'UICE    ','VICE    ','AREA     ','HEFF    ','HSNOW    ',
+ nml_vecFiles(1) = 'mask1_ctrl.bin',
+ nml_vecFiles(2) = 'mask2_ctrl.bin',
+ nml_vec_avg_periods(1:2) = 1800., 1800.,
+ nml_fields3D(1:2,1) = 'THETA   ','SALT   ',
+ nml_levels3D(1:2,1) =   15, 15, 
+ nml_fields3D(1:2,2) = 'THETA   ','SALT   ',
+ nml_levels3D(1:2,2) =   15, 15, 
 
- nml_filePrec = 64,
+ nml_sfFiles(1) = 'mask3_ctrl.bin',
+ nml_fieldsSF(1,1) = 'ETAN    ',
+ nml_sf_avg_periods(1) = 1800.,
+
+###############################################################
+# test 1: timesteps averaged, each variable in a single file
+
+ nml_vecFiles(3) = 'mask1_test1.bin',
+ nml_vecFiles(4) = 'mask2_test1.bin',
+ nml_vec_avg_periods(3) = 7200.,
+ nml_vec_avg_periods(4) = 3600.,
+ nml_fields3D(1:2,3) = 'THETA   ','SALT   ',
+ nml_levels3D(1:2,3) =   15, 15, 
+ nml_fields3D(1:2,4) = 'THETA   ','SALT   ',
+ nml_levels3D(1:2,4) =   15, 15, 
+
+ nml_sfFiles(2) = 'mask3_test1.bin',
+ nml_fieldsSF(1,2) = 'ETAN    ',
+ nml_sf_avg_periods(2) = 9000.,
+
+###############################################################
+# test 2: each timestep output, variables divided across files
+
+ nml_vecFiles(5) = 'mask1_test2.bin',
+ nml_vecFiles(6) = 'mask2_test2.bin',
+ nml_vec_avg_periods(5:6) = 1800., 1800.,
+ nml_fields3D(1:2,5) = 'THETA   ','SALT   ',
+ nml_levels3D(1:2,5) =   15, 15, 
+ nml_fields3D(1:2,6) = 'THETA   ','SALT   ',
+ nml_levels3D(1:2,6) =   15, 15, 
+ nml_vec_iters_per_file(5) = 5,
+ nml_vec_iters_per_file(6) = 4,
+
+ nml_sfFiles(3) = 'mask3_test2.bin',
+ nml_fieldsSF(1,3) = 'ETAN    ',
+ nml_sf_iters_per_file(3) = 10,
+ nml_sf_avg_periods(3) = 1800.,
+
+###############################################################
+# test 3: timesteps averaged, variables divided across files
+
+ nml_vecFiles(7) = 'mask1_test3.bin',
+ nml_vecFiles(8) = 'mask2_test3.bin',
+ nml_vec_avg_periods(7) = 7200.,
+ nml_vec_avg_periods(8) = 3600.,
+ nml_fields3D(1:2,7) = 'THETA   ','SALT   ',
+ nml_levels3D(1:2,7) =   15, 15, 
+ nml_fields3D(1:2,8) = 'THETA   ','SALT   ',
+ nml_levels3D(1:2,8) =   15, 15, 
+ nml_vec_iters_per_file(7) = 5,
+ nml_vec_iters_per_file(8) = 4,
+
+ nml_sfFiles(4) = 'mask3_test3.bin',
+ nml_fieldsSF(1,4) = 'ETAN    ',
+ nml_sf_iters_per_file(4) = 10,
+ nml_sf_avg_periods(4) = 9000.,
+
+###############################################################
+
+ nml_filePrec = 32,
  &
