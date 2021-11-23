@@ -73,22 +73,19 @@ C  All MPI objects (e.g., MPI_Datatype, MPI_Comm) are of type INTEGER in Fortran
         WRITE(msgBuf,'(A)') "========================================="
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
+        WRITE(msgBuf,'(A,F20.3)') "     myTime: ", myTime
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
         WRITE(msgBuf,'(A,I10)') "     myIter: ", myIter
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
         WRITE(msgBuf,'(A,I5)') "     mpiMyId: ",mpiMyId
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A,F9.3)') "     time_passed: ", time_passed
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A,F9.3)') "     nTimeSteps_vec: ",nTimeSteps_vec
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                     SQUEEZE_RIGHT, myThid )
-        endif
+       endif
 
-       IF ((time_passed.le.endTime_vec).AND.
-     &     (time_passed.ge.startTime_vec)) then
+       IF ((myTime.le.endTime_vec).AND.
+     &     (myTime.ge.startTime_vec)) then
 
 C----&------------------------------------------------------------------xxxxxxx|
 C      All Processes Tasks:
@@ -116,76 +113,72 @@ C       Initializing local arrays
 C       Extracting field values on open boundary points at each time step
         CALL SET_SUBFIELDS(myThid, myIter)
 
-        IF (nTimeSteps_vec .eq. 0) then
-C        Initialize averages to zero
-         CALL SET_TO_INI_STATE(myThid)
-        ELSE
-C        Cumulate diagnostics_vec fields and number of time steps (for time average)
-         CALL CUMULATE_FLD_TIME(myThid)
-        ENDIF
+C       Now looping through each boundary mask and communicating fields between master process and child processes
+C       Each child sends their piece of the mask to the parent here
+C       The parent node does the receiving in VEC_MASTER_PROC_TASKS
+      DO vec_id=1, nVEC_mask
 
-C      !ENDIF for IF myTime .le. endTIme_vec
-       ENDIF
+      IF (vec_nTimeSteps(vec_id) .eq. 0) then
+C        Initialize averages to zero
+         CALL SET_TO_VEC_INI_STATE(myThid,vec_id)
+      ELSE
+C        Cumulate diagnostics_vec fields and number of time steps (for time average)
+         CALL CUMULATE_VEC_FLD_TIME(myThid,vec_id)
+      ENDIF
 
 
 C----&------------------------------------------------------------------xxxxxxx|
-C      Check if at end of averaging period:
+C      Output debug notes on check if at end of averaging period:
 
       if (debug .eq. 1) then
-        WRITE(msgBuf,'(A,A)') "  DIAGNOSTICS_VEC_OUTPUT: ",
-     &                      "CHECKING IF OUTPUT REQUESTED: "
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+         WRITE(msgBuf,'(A)') "----------------------------------------"
+         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A,F18.3)') "     myTime: ",myTime
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+      WRITE(msgBuf,'(A,A,I5)') " CHECKING IF OUTPUT REQUESTED FOR ",
+     &     "VEC MASK ",vec_id
+         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A,F18.3)') "     endTime_vec: ",endTime_vec
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+         WRITE(msgBuf,'(A)') "----------------------------------------"
+         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A,F18.3)') "     startTime_vec: ",startTime_vec
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+      WRITE(msgBuf,'(A,F9.3)') "     vec_nTimeSteps: ",
+     &   vec_nTimeSteps(vec_id)
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A,F9.3)') "     nTimeSteps_vec: ",nTimeSteps_vec
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+      WRITE(msgBuf,'(A,F12.3)') "     vec_avg_periods: ",
+     &   vec_avg_periods(vec_id)
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A,F9.3)') "     avgPeriod_vec: ",avgPeriod_vec
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+      WRITE(msgBuf,'(A,F20.3)') "     vec_time_passed: ",
+     &   vec_time_passed(vec_id)
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A,F9.3)') "     deltaTClock: ",deltaTClock
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+      WRITE(msgBuf,'(A,F9.3)') "     deltaTClock: ",deltaTClock
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A,L1)') "     (myTime .le. endTime_vec): ",
-     &                         (myTime .le. endTime_vec)
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+      WRITE(msgBuf,'(A,L1)') "     DIFFERENT_MULTIPLE: ",
+     &   DIFFERENT_MULTIPLE(vec_avg_periods(vec_id),myTime,deltaTClock)
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A,L1)') "     DIFFERENT_MULTIPLE: ",
-     &          DIFFERENT_MULTIPLE(avgPeriod_vec,myTime,deltaTClock)
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+      WRITE(msgBuf,'(A,L1)') "     Output Requested: ",
+     &  ((vec_nTimeSteps(vec_id) .NE. 0) .AND.
+     &  DIFFERENT_MULTIPLE(vec_avg_periods(vec_id),
+     &      vec_time_passed(vec_id),deltaTClock))
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A,L1)') "     Output Requested: ",
-     &          (((nTimeSteps_vec .NE. 0)
-     & .AND.DIFFERENT_MULTIPLE(avgPeriod_vec,time_passed,deltaTClock))
-     &  .AND. (time_passed .le. endTime_vec))
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                     SQUEEZE_RIGHT, myThid )
-        endif
+      endif
 
-
-       IF (((nTimeSteps_vec .NE. 0)
-     &  .AND.DIFFERENT_MULTIPLE(avgPeriod_vec,time_passed,deltaTClock))
-     &  .AND. (time_passed .le. endTime_vec)
-     &  .AND. (time_passed .ge. startTime_vec)) THEN
+       IF (((vec_nTimeSteps(vec_id) .NE. 0)
+     &  .AND.DIFFERENT_MULTIPLE(vec_avg_periods(vec_id),
+     &        vec_time_passed(vec_id),deltaTClock))
+     &  .AND. (myTime .le. endTime_vec)
+     &  .AND. (myTime .ge. startTime_vec)) THEN
 
 C----&------------------------------------------------------------------xxxxxxx|
 C      If at end of averaging period:
 
 C       Compute time average of all sub fields
-        CALL TIMEAVE_FLDS(myThid, myTime)
-
-C       Now looping through each boundary mask and communicating fields between master process and child processes
-C       Each child sends their piece of the mask to the parent here
-C       The parent node does the receiving in VEC_MASTER_PROC_TASKS
-        DO vec_id=1, nVEC_mask
+        CALL TIMEAVE_VEC_FLD(myThid, myTime, vec_id)
 
 #ifdef ALLOW_USE_MPI
 C        When not using MPI, proc 0 already has all of the information
@@ -240,14 +233,25 @@ C         Processes 0 receives all of the points
           ENDDO
          ENDIF
 
-         if (vec_iters_per_file(vec_id).ne.0) then
+C      Set averages back to zero
+         CALL SET_TO_VEC_INI_STATE(myThid,vec_id)
+
+      if (vec_iters_per_file(vec_id).ne.0) then
          if (vec_time_levels(vec_id,1).eq.vec_iters_per_file(vec_id))
      &    then
             vec_time_levels(vec_id,1) = 0
             vec_time_levels(vec_id,2) = myIter+1
          endif
-         endif
-         vec_time_levels(vec_id,1) = vec_time_levels(vec_id,1) + 1
+      endif
+      vec_time_levels(vec_id,1) = vec_time_levels(vec_id,1) + 1
+
+
+C     Ending if end of averaging period
+      ENDIF
+
+      vec_nTimeSteps(vec_id) = vec_nTimeSteps(vec_id) + 1
+      vec_time_passed(vec_id) = vec_time_passed(vec_id) + 
+     &                           deltaTClock
 
 C       !ENDDO for vec_id
         ENDDO
@@ -260,7 +264,68 @@ C ---- Surface Masks -----------------------------------------------------------
 C       Now looping through each surface mask and communicating fields between master process and child processes
 C       Each child sends their piece of the mask to the parent here
 C       The parent node does the receiving in SF_MASTER_PROC_TASKS
-        DO sf_id=1, nSURF_mask
+       DO sf_id=1, nSURF_mask
+
+      IF (sf_nTimeSteps(sf_id) .eq. 0) then
+C        Initialize averages to zero
+         CALL SET_TO_SF_INI_STATE(myThid,sf_id)
+      ELSE
+C        Cumulate diagnostics_sf fields and number of time steps (for time average)
+          CALL CUMULATE_SF_FLD_TIME(myThid,sf_id)
+      ENDIF
+
+C----&------------------------------------------------------------------xxxxxxx|
+C      Output debug notes on check if at end of averaging period:
+
+      if (debug .eq. 1) then
+         WRITE(msgBuf,'(A)') "----------------------------------------"
+         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A,A,I5)') " CHECKING IF OUTPUT REQUESTED FOR SF",
+     &     " MASK ", sf_id
+         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+         WRITE(msgBuf,'(A)') "----------------------------------------"
+         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A,F9.3)') "     sf_nTimeSteps: ",
+     &   sf_nTimeSteps(sf_id)
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A,F12.3)') "     sf_avg_periods: ",
+     &   sf_avg_periods(sf_id)
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A,F20.3)') "     sf_time_passed: ",
+     &   sf_time_passed(sf_id)
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A,F9.3)') "     deltaTClock: ",deltaTClock
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A,L1)') "     DIFFERENT_MULTIPLE: ",
+     &   DIFFERENT_MULTIPLE(sf_avg_periods(sf_id),myTime,deltaTClock)
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A,L1)') "     Output Requested: ",
+     &  ((sf_nTimeSteps(sf_id) .NE. 0) .AND.
+     &  DIFFERENT_MULTIPLE(sf_avg_periods(sf_id),
+     &      sf_time_passed(sf_id),deltaTClock))
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+      endif
+
+C----&------------------------------------------------------------------xxxxxxx|
+
+C   Check if at end of averaging period
+      IF (((sf_nTimeSteps(sf_id) .NE. 0).AND.
+     &  DIFFERENT_MULTIPLE(sf_avg_periods(sf_id),
+     &      sf_time_passed(sf_id),deltaTClock))
+     &  .AND. (myTime .le. endTime_vec)
+     &  .AND. (myTime .ge. startTime_vec)) THEN
+
+C       Compute time average of all sub fields
+      CALL TIMEAVE_SF_FLD(myThid, myTime, sf_id)
 
 #ifdef ALLOW_USE_MPI
 
@@ -293,6 +358,9 @@ C           Send R8 array to master process
 C         !ENDIF for mpiMyId .eq. 0
          ENDIF
 
+C      Set averages back to zero
+         CALL SET_TO_SF_INI_STATE(myThid,sf_id)
+
          if (sf_iters_per_file(sf_id).ne.0) then
          if (sf_time_levels(sf_id,1).eq.sf_iters_per_file(sf_id))
      &    then
@@ -302,18 +370,18 @@ C         !ENDIF for mpiMyId .eq. 0
          endif
          sf_time_levels(sf_id,1) = sf_time_levels(sf_id,1) + 1
 
-C       !ENDDO for sf_id
-        ENDDO
-
-C      Set averages back to zero
-       CALL SET_TO_INI_STATE(myThid)
-
 C     !ENDIF for end of averaging period
-      ENDIF 
+        ENDIF 
 
 C      Move on to next time step
-       nTimeSteps_vec = nTimeSteps_vec + 1
-       time_passed = time_passed + deltaTClock
+        sf_nTimeSteps(sf_id) = sf_nTimeSteps(sf_id) + 1
+        sf_time_passed(sf_id) = sf_time_passed(sf_id) + 
+     &                           deltaTClock
+
+C       !ENDDO for sf_id
+        ENDDO
+      
+      ENDIF
 
        if (debug .eq. 1) then
         WRITE(msgBuf,'(A)') "========================================="

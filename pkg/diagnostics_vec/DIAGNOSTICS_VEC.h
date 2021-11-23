@@ -37,11 +37,16 @@ C     The default (=0) will put all iterations into the same file
       INTEGER vec_iters_per_file(nVEC_mask)
       INTEGER sf_iters_per_file(nSURF_mask)
 
-C     These store the time levels for each mask 
-C     (keeps track of how to output when all iterations are not in same file)
-C     First column is the time_level
-C     Second column is the iteration used in the output name
+C     This is the averaging period and time levels for each vector mask
+      _RL vec_avg_periods(nVEC_mask)
+      _RL vec_nTimeSteps(nVEC_mask)
+      _RL vec_time_passed(nVEC_mask)
       INTEGER vec_time_levels(nVEC_mask,2)
+
+C     This is the averaging period and time levels for each surface mask
+      _RL sf_avg_periods(nSURF_mask)
+      _RL sf_nTimeSteps(nSURF_mask)
+      _RL sf_time_passed(nSURF_mask)
       INTEGER sf_time_levels(nSURF_mask,2)
 
 C     These are some i/o parameters
@@ -49,11 +54,8 @@ C     These are some i/o parameters
       INTEGER vec_debugLevel
 
 C     These are times controlling when the averaging is done
-      _RL avgPeriod_vec
       _RL startTime_vec
       _RL endTime_vec
-      _RL nTimeSteps_vec
-      _RL time_passed
 
 C     This is where the input masks are stored after they are read in
       _RL vec_subMask(nVEC_mask, 1-Olx:sNx+Olx,1-Oly:sNy+Oly,nSx,nSy)
@@ -93,8 +95,11 @@ C------------------------------------------------------------------------------|
 
       COMMON / DIAG_VEC_VARS_R /
      &     vec_subMask, sf_subMask,
-     &     nTimeSteps_vec, time_passed,
-     &     startTime_vec, endTime_vec, avgPeriod_vec,
+     &     startTime_vec, endTime_vec,
+     &     vec_nTimeSteps, vec_time_passed,
+     &     vec_avg_periods,
+     &     sf_nTimeSteps, sf_time_passed,
+     &     sf_avg_periods,
      &     global_vec2D, global_vec3D, global_SF,
      &     fldOnMsk_2D, fldOnMsk_2Davg,
      &     fldOnMsk_3D, fldOnMsk_3Davg,

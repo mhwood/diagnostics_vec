@@ -75,6 +75,8 @@ C     This is in the initialization of the vector variables
 
         vec_time_levels(vec_id,1) = 1
         vec_time_levels(vec_id,2) = nIter0+1
+        vec_time_passed(vec_id) = startTime
+        vec_nTimeSteps(vec_id) = 0
 
         DO pid=1, nPx*nPy
           vec_numPnts_allproc(vec_id,pid) = 0
@@ -128,6 +130,8 @@ C     This is in the initialization of the surface variables
 
         sf_time_levels(sf_id,1) = 1
         sf_time_levels(sf_id,2) = nIter0+1
+        sf_time_passed(sf_id) = startTime
+        sf_nTimeSteps(sf_id) = 0
 
         DO pid=1, nPx*nPy
           sf_numPnts_allproc(sf_id,pid) = 0
@@ -164,9 +168,6 @@ C     This is in the initialization of the surface variables
         ENDDO
 
       ENDDO
-
-C     Initializing number of time levels and time passed
-      time_passed = startTime
 
 C----&------------------------------------------------------------------xxxxxxx|
 C     Read in the masks

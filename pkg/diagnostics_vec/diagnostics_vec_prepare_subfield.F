@@ -455,7 +455,52 @@ C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 
-      SUBROUTINE SET_TO_INI_STATE(myThid)
+        SUBROUTINE SET_TO_VEC_INI_STATE(myThid,vec_id)
+C     Initializes field value average  to zero
+
+        IMPLICIT NONE
+        
+#include "SIZE.h"
+#include "EEPARAMS.h"
+#include "DIAGNOSTICS_VEC.h"
+
+        INTEGER myThid, vec_id
+        INTEGER nFlds2D, nFlds3D
+        INTEGER i, k, fld2D, fld3D
+C----&------------------------------------------------------------------xxxxxxx|
+
+C        Total number of 2D fields
+        nFlds2D = vec_nFlds2D(vec_id)
+        DO fld2D=1, nFlds2D
+          DO i=1, (sNx+sNy)*(nSx*nSy)
+            fldOnMsk_2Davg(vec_id,fld2D,i) = 0.0
+          ENDDO
+        ENDDO
+
+c        Total number of 3D fields
+        nFlds3D = vec_nFlds3D(vec_id)
+        DO fld3D=1, nFlds3D
+          DO i=1, (sNx+sNy)*(nSx*nSy)
+            DO k=1, vec_levels3D(fld3D, vec_id)
+               fldOnMsk_3Davg(vec_id,fld3D,i,k) = 0.0
+            ENDDO
+          ENDDO
+        ENDDO
+
+C       Set number of time steps within averaging period back to zero for the next averaging period
+        vec_nTimeSteps(vec_id) = 0
+
+        END
+C----&------------------------------------------------------------------xxxxxxx|
+C----&------------------------------------------------------------------xxxxxxx|
+
+
+
+
+C----&------------------------------------------------------------------xxxxxxx|
+C----&------------------------------------------------------------------xxxxxxx|
+
+        SUBROUTINE SET_TO_SF_INI_STATE(myThid,sf_id)
 C     Initializes field value average  to zero
         IMPLICIT NONE
 
@@ -463,51 +508,25 @@ C     Initializes field value average  to zero
 #include "EEPARAMS.h"
 #include "DIAGNOSTICS_VEC.h"
 
-        INTEGER myThid
-        INTEGER nFlds2D, nFlds3D
+        INTEGER myThid, sf_id
         INTEGER nFldsSF
-        INTEGER i, k, vec_id, fld2D, fld3D
-        INTEGER sf_id, fldSF
+        INTEGER i, fldSF
 C----&------------------------------------------------------------------xxxxxxx|
 
-        DO vec_id=1, nVEC_mask
-
-C        Total number of 2D fields
-         nFlds2D = vec_nFlds2D(vec_id)
-         DO fld2D=1, nFlds2D
-          DO i=1, (sNx+sNy)*(nSx*nSy)
-           fldOnMsk_2Davg(vec_id,fld2D,i) = 0.0
-          ENDDO
-         ENDDO
-
-c        Total number of 3D fields
-         nFlds3D = vec_nFlds3D(vec_id)
-         DO fld3D=1, nFlds3D
-          DO i=1, (sNx+sNy)*(nSx*nSy)
-           DO k=1, vec_levels3D(fld3D, vec_id)
-            fldOnMsk_3Davg(vec_id,fld3D,i,k) = 0.0
-           ENDDO
-          ENDDO
-         ENDDO
-
-        ENDDO
 
 
-        DO sf_id=1, nSURF_mask
 C        Total number of SF fields
-         nFldsSF = sf_nFlds(sf_id)
-         DO fldSF=1, nFldsSF
+        nFldsSF = sf_nFlds(sf_id)
+        DO fldSF=1, nFldsSF
           DO i=1, (sNx*sNy)*(nSx*nSy)
-           fldOnMsk_SFavg(sf_id,fldSF,i) = 0.0
+                fldOnMsk_SFavg(sf_id,fldSF,i) = 0.0
           ENDDO
-         ENDDO
-
         ENDDO
 
 C       Set number of time steps within averaging period back to zero for the next averaging period
-       nTimeSteps_vec = 0
+        sf_nTimeSteps(sf_id) = 0
 
-      END
+        END
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 
@@ -536,7 +555,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 C !ROUTINE: CUMULATE_FLD_TIME
 
 C !INTERFACE:
-      SUBROUTINE CUMULATE_FLD_TIME(myThid)
+        SUBROUTINE CUMULATE_VEC_FLD_TIME(myThid,vec_id)
 
 C     Accumulate extracted field values
         IMPLICIT NONE  
@@ -547,42 +566,33 @@ C     !USES:
 #include "PARAMS.h"
 #include "DIAGNOSTICS_VEC.h"
 
-      INTEGER myThid
-      INTEGER i, k, vec_id, fld, fld2D, fld3D
-      INTEGER sf_id, fldSF
-      INTEGER, PARAMETER :: debug = 0
+        INTEGER myThid, vec_id
+        INTEGER i, k, fld, fld2D, fld3D
+        INTEGER, PARAMETER :: debug = 0
 
 C----&------------------------------------------------------------------xxxxxxx|
 
-      DO vec_id=1, nVEC_mask
-       DO i=1, (sNx+sNy)*(nSx*nSy)
+
+        DO i=1, (sNx+sNy)*(nSx*nSy)
+
         DO fld2D=1, vec_nFlds2D(vec_id)
-         fldOnMsk_2Davg(vec_id,fld2D,i)
+                fldOnMsk_2Davg(vec_id,fld2D,i)
      &                      = fldOnMsk_2Davg(vec_id,fld2D,i)
      &                        + fldOnMsk_2D(vec_id,fld2D,i)
         ENDDO
+
         DO fld3D=1, vec_nFlds3D(vec_id)
-         DO k=1, vec_levels3D(fld3D, vec_id)
-          fldOnMsk_3Davg(vec_id,fld3D,i,k)
+          DO k=1, vec_levels3D(fld3D, vec_id)
+                fldOnMsk_3Davg(vec_id,fld3D,i,k)
      &                    = fldOnMsk_3Davg(vec_id,fld3D,i,k)
      &                      + fldOnMsk_3D(vec_id,fld3D,i,k)
-         ENDDO
-        ENDDO
-       ENDDO
-      ENDDO
-
-      DO sf_id=1, nSURF_mask
-       DO i=1, (sNx*sNy)*(nSx*nSy)
-        DO fldSF=1, sf_nFlds(sf_id)
-         fldOnMsk_SFavg(sf_id,fldSF,i)
-     &                      = fldOnMsk_SFavg(sf_id,fldSF,i)
-     &                        + fldOnMsk_SF(sf_id,fldSF,i)
+          ENDDO
         ENDDO
 
-       ENDDO
-      ENDDO
+        ENDDO
 
-      END
+
+        END
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 
@@ -590,7 +600,40 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 
 
+C----&------------------------------------------------------------------xxxxxxx|
+C----&------------------------------------------------------------------xxxxxxx|
+C !ROUTINE: CUMULATE_FLD_TIME
 
+C !INTERFACE:
+        SUBROUTINE CUMULATE_SF_FLD_TIME(myThid,sf_id)
+
+C     Accumulate extracted field values
+        IMPLICIT NONE  
+
+C     !USES:
+#include "SIZE.h"
+#include "EEPARAMS.h"
+#include "PARAMS.h"
+#include "DIAGNOSTICS_VEC.h"
+
+        INTEGER myThid, sf_id
+        INTEGER i, fldSF
+        INTEGER, PARAMETER :: debug = 0
+
+C----&------------------------------------------------------------------xxxxxxx|
+
+
+        DO i=1, (sNx*sNy)*(nSx*nSy)
+          DO fldSF=1, sf_nFlds(sf_id)
+                fldOnMsk_SFavg(sf_id,fldSF,i)
+     &             = fldOnMsk_SFavg(sf_id,fldSF,i)
+     &               + fldOnMsk_SF(sf_id,fldSF,i)
+          ENDDO
+        ENDDO
+
+        END
+C----&------------------------------------------------------------------xxxxxxx|
+C----&------------------------------------------------------------------xxxxxxx|
 
 
 
@@ -600,7 +643,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 C !ROUTINE: TIMEAVE_FLD
 
 C !INTERFACE:
-      SUBROUTINE TIMEAVE_FLDS(myThid, myTime)
+        SUBROUTINE TIMEAVE_VEC_FLD(myThid, myTime, vec_id)
 C       Computes average of fields using the number of time steps taken 
 C       in current period
         IMPLICIT NONE
@@ -612,9 +655,8 @@ C     !USES:
 #include "PARAMS.h"
 #include "DIAGNOSTICS_VEC.h"
 
-        INTEGER myThid
-        INTEGER i, k,fld, vec_id, fld2D, fld3D
-        INTEGER sf_id, fldSF
+        INTEGER myThid, vec_id
+        INTEGER i, k,fld, fld2D, fld3D
         _RL myTime
         INTEGER, PARAMETER :: debug = 0
         CHARACTER*(MAX_LEN_MBUF) msgBuf
@@ -626,7 +668,7 @@ C----&------------------------------------------------------------------xxxxxxx|
         WRITE(msgBuf,'(A)') "========================================="
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A)') "  BEGIN TIMEAVE_FLD DEBUG "
+        WRITE(msgBuf,'(A)') "  BEGIN TIMEAVE_VEC_FLD DEBUG "
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
         WRITE(msgBuf,'(A)') "========================================="
@@ -634,37 +676,29 @@ C----&------------------------------------------------------------------xxxxxxx|
      &                     SQUEEZE_RIGHT, myThid )
         endif
 
-        DO vec_id=1, nVEC_mask
-          DO i=1, (sNx+sNy)*(nSx*nSy)
-           DO fld2D=1, vec_nFlds2D(vec_id)
+
+        DO i=1, (sNx+sNy)*(nSx*nSy)
+
+        DO fld2D=1, vec_nFlds2D(vec_id)
             fldOnMsk_2Davg(vec_id,fld2D,i) =
-     &           fldOnMsk_2Davg(vec_id,fld2D,i)/nTimeSteps_vec
-           ENDDO
-           DO fld3D=1, vec_nFlds3D(vec_id)
-            DO k=1, vec_levels3D(fld3D,vec_id)
-             fldOnMsk_3Davg(vec_id,fld3D,i,k) =
-     &          fldOnMsk_3Davg(vec_id,fld3D,i,k)/nTimeSteps_vec
-            ENDDO
-           ENDDO
-          ENDDO
+     &      fldOnMsk_2Davg(vec_id,fld2D,i)/vec_nTimeSteps(vec_id)
+        ENDDO
 
-       ENDDO
-
-        DO sf_id=1, nSURF_mask
-          DO i=1, (sNx*sNy)*(nSx*nSy)
-           DO fldSF=1, sf_nFlds(sf_id)
-            fldOnMsk_SFavg(sf_id,fldSF,i) =
-     &              fldOnMsk_SFavg(sf_id,fldSF,i)/nTimeSteps_vec
-           ENDDO
+        DO fld3D=1, vec_nFlds3D(vec_id)
+          DO k=1, vec_levels3D(fld3D,vec_id)
+            fldOnMsk_3Davg(vec_id,fld3D,i,k) =
+     &       fldOnMsk_3Davg(vec_id,fld3D,i,k)/vec_nTimeSteps(vec_id)
           ENDDO
+        ENDDO
 
         ENDDO
+
 
         if (debug .eq. 1) then
         WRITE(msgBuf,'(A)') "========================================="
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
-        WRITE(msgBuf,'(A)') "  END TIMEAVE_FLD DEBUG "
+        WRITE(msgBuf,'(A)') "  END TIMEAVE_VEC_FLD DEBUG "
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
         WRITE(msgBuf,'(A)') "========================================="
@@ -672,6 +706,72 @@ C----&------------------------------------------------------------------xxxxxxx|
      &                     SQUEEZE_RIGHT, myThid )
         endif
 
-      END
+        END
+C----&------------------------------------------------------------------xxxxxxx|
+C----&------------------------------------------------------------------xxxxxxx|
+
+
+
+
+
+C----&------------------------------------------------------------------xxxxxxx|
+C----&------------------------------------------------------------------xxxxxxx|
+C !ROUTINE: TIMEAVE_FLD
+
+C !INTERFACE:
+        SUBROUTINE TIMEAVE_SF_FLD(myThid, myTime, sf_id)
+C       Computes average of fields using the number of time steps taken 
+C       in current period
+        IMPLICIT NONE
+
+C     !USES:
+#include "SIZE.h"
+#include "EEPARAMS.h"
+#include "EESUPPORT.h"
+#include "PARAMS.h"
+#include "DIAGNOSTICS_VEC.h"
+
+        INTEGER myThid, sf_id
+        INTEGER i, fldSF
+        _RL myTime
+        INTEGER, PARAMETER :: debug = 0
+        CHARACTER*(MAX_LEN_MBUF) msgBuf
+
+C----&------------------------------------------------------------------xxxxxxx|
+
+
+        if (debug .eq. 1) then
+        WRITE(msgBuf,'(A)') "========================================="
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+        WRITE(msgBuf,'(A)') "  BEGIN TIMEAVE_SF_FLD DEBUG "
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+        WRITE(msgBuf,'(A)') "========================================="
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+        endif
+
+        DO i=1, (sNx*sNy)*(nSx*nSy)
+          DO fldSF=1, sf_nFlds(sf_id)
+                fldOnMsk_SFavg(sf_id,fldSF,i) =
+     &          fldOnMsk_SFavg(sf_id,fldSF,i)/sf_nTimeSteps(sf_id)
+          ENDDO
+        ENDDO
+
+
+        if (debug .eq. 1) then
+        WRITE(msgBuf,'(A)') "========================================="
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+        WRITE(msgBuf,'(A)') "  END TIMEAVE_SF_FLD DEBUG "
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+        WRITE(msgBuf,'(A)') "========================================="
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+        endif
+
+        END
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|

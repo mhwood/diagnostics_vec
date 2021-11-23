@@ -71,9 +71,10 @@ C     Define the diagnostics_vec variables
 C----&------------------------------------------------------------------xxxxxxx|
       
       _RL undefRL
-      _RL nml_avgPeriod
       _RL nml_startTime
       _RL nml_endTime
+      _RL nml_vec_avg_periods(nVEC_mask)
+      _RL nml_sf_avg_periods(nSURF_mask)
       CHARACTER*30 nml_vecFiles(nVEC_mask)
       CHARACTER*30 nml_sfFiles(nSURF_mask)
       CHARACTER*8 nml_fields2D(MAX_NFLDS, nVEC_mask)
@@ -85,7 +86,8 @@ C----&------------------------------------------------------------------xxxxxxx|
       INTEGER nml_filePrec, nml_debugLevel
 
       NAMELIST / DIAG_VEC_INPUT_VARS /
-     &     nml_avgPeriod, nml_startTime, nml_endTime,
+     &     nml_startTime, nml_endTime,
+     &     nml_vec_avg_periods, nml_sf_avg_periods,
      &     nml_vecFiles,
      &     nml_sfFiles,
      &     nml_vec_iters_per_file, nml_sf_iters_per_file,
@@ -116,7 +118,6 @@ C----&------------------------------------------------------------------xxxxxxx|
 
       nml_startTime = endTime
       nml_endTime = startTime
-      nml_avgPeriod = deltaT
       nml_filePrec = 64
       nml_debugLevel = 0
 
@@ -128,6 +129,7 @@ C----&------------------------------------------------------------------xxxxxxx|
         ENDDO
         nml_vecFiles(j) = ' '
         nml_vec_iters_per_file(j) = 0
+        nml_vec_avg_periods(j) = deltaT
       ENDDO
 
 
@@ -157,6 +159,7 @@ C ----  Surface section is here
         ENDDO
         sf_fnames(j) = ' '
         nml_sf_iters_per_file(j) = 0
+        nml_sf_avg_periods(j) = deltaT
       ENDDO
 
 C----&------------------------------------------------------------------xxxxxxx|
@@ -199,6 +202,7 @@ C----&------------------------------------------------------------------xxxxxxx|
         vec_fnames(vec_count) = nml_vecFiles(vec_count)
         vec_iters_per_file(vec_count) = 
      &   nml_vec_iters_per_file(vec_count)
+        vec_avg_periods(vec_count) = nml_vec_avg_periods(vec_count)
 
         DO i=1, MAX_NFLDS
           vec_flds2D(i,vec_count) = nml_fields2D(i,vec_count)
@@ -216,6 +220,7 @@ C----&------------------------------------------------------------------xxxxxxx|
       DO sf=1, nSURF_mask
         sf_fnames(sf) = nml_sfFiles(sf)
         sf_iters_per_file(sf) = nml_sf_iters_per_file(sf)
+        sf_avg_periods(sf) = nml_sf_avg_periods(sf)
 
         DO i=1, MAX_NFLDS
           sf_flds(i,sf) = nml_fieldsSF(i,sf)
@@ -225,7 +230,6 @@ C----&------------------------------------------------------------------xxxxxxx|
         ENDDO
       ENDDO
 
-      avgPeriod_vec = nml_avgPeriod
       startTime_vec = nml_startTime
       endTime_vec = nml_endTime
       vec_filePrec = nml_filePrec
