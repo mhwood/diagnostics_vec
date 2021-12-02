@@ -26,6 +26,6 @@ Note that this repository has two additional directories which will not be inclu
 ## Recommended Future Improvements to diagnostics_vec
 1. Implement option to output data into a netCDF file, using the ``mnc`` package.
 2. Add option to output a "snapshot" by providing frequecy as a negative number (following the convention established in the diagnostics package)
-3. ~~Add option to use different averaging frequencies for each mask.~~ (Implemented)
-4. ~~Add option to limit number of iterations stored in output files~~ (Implemented)
+3. ~~Add option to use different averaging frequencies for each mask.~~ :white_check_mark:
+4. ~~Add option to limit number of iterations stored in output files~~ :white_check_mark:
 
