@@ -6,7 +6,7 @@ Authors: Michael Wood, Ian Fenty, April Shin
 The MITgcm model has one method for outputting model "diagnostics" for a particular experiment: dump the entire field. While entire model fields are desired for many experiements, this is not always the case. Here, we design a model package which is capable of outputting model diagnostics in a subset of the model domain e.g. along a vector (or "vec"). 
 
 ## Getting Started
-The purpose of this repository is to provide a convenient way to merge new package files, verification experiments, and documentation into a fresh clone (and eventually a fork) of the main branch of MITgcm. To faciliate this merge, there are three convenient scripts provided in the [utils](https://github.com/mhwood/diagnostics_vec/tree/main/utils) directory. To start, clone this repository into a convenient drive on your machine. Then, `cd` to the utils directory and run the following code from the command line, passing the path to a (preferrably fresh) clone of the main branch of the MITgcm:
+The purpose of this repository is to provide a convenient way to merge new package files, verification experiments, and documentation into a fresh clone (and potentially an eventual fork) of the main branch of MITgcm. To faciliate this merge, there are three convenient scripts provided in the [utils](https://github.com/mhwood/diagnostics_vec/tree/main/utils) directory. To start, clone this repository into a convenient drive on your machine. Then, `cd` to the utils directory and run the following code from the command line, passing the path to a (preferrably fresh) clone of the main branch of the MITgcm:
 ```
 python3 copy_doc_files_to_MITgcm.py -m /path/to/MITgcm_fresh
 python3 copy_pkg_files_to_MITgcm_.py -m /path/to/MITgcm_fresh
@@ -28,4 +28,9 @@ Note that this repository has two additional directories which will not be inclu
 2. Add option to output a "snapshot" by providing frequecy as a negative number (following the convention established in the diagnostics package)
 3. ~~Add option to use different averaging frequencies for each mask.~~ :white_check_mark:
 4. ~~Add option to limit number of iterations stored in output files~~ :white_check_mark:
+
+## California Institure of Technology Copyright Statement
+Copyright 2021, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any commercial use must be negotiated with the Office of Technology Transfer at the California Institute of Technology.
+
+This software may be subject to U.S. export control laws. By accepting this software, the user agrees to comply with all applicable U.S. export laws and regulations. User has the responsibility to obtain export licenses, or other export authority as may be required before exporting such information to foreign countries or providing access to foreign persons.
 
