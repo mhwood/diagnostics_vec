@@ -116,8 +116,8 @@ C----&------------------------------------------------------------------xxxxxxx|
 
       _BEGIN_MASTER(myThid)
 
-      nml_startTime = endTime
-      nml_endTime = startTime
+      nml_startTime = startTime
+      nml_endTime = endTime
       nml_filePrec = 64
       nml_debugLevel = 0
 
@@ -234,7 +234,6 @@ C----&------------------------------------------------------------------xxxxxxx|
       endTime_vec = nml_endTime
       vec_filePrec = nml_filePrec
       vec_debugLevel = nml_debugLevel
-
 
 C----&------------------------------------------------------------------xxxxxxx|
 C     Wrap up the code

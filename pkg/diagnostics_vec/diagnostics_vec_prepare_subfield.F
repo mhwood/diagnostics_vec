@@ -99,6 +99,25 @@ C          Comparing strings provided by user to fields in diagnostics_vec
             fldOnMsk_2D(vec_id,fld2D,loc_count) = etaN(i,j,bi,bj)
            ELSE IF (vec_flds2D(fld2D,vec_id) .eq. 'ETAH') then
             fldOnMsk_2D(vec_id,fld2D,loc_count) = etaH(i,j,bi,bj)
+       
+#ifdef ALLOW_SEAICE
+C       Add the variables from the sea ice package if its acivated
+             ELSE IF (vec_flds2D(fld2D,vec_id) .eq. 'UICE') then
+                fldOnMsk_2D(vec_id,fld2D,loc_count) =
+     &                                        UICE(i,j,bi,bj)
+             ELSE IF (vec_flds2D(fld2D,vec_id) .eq. 'VICE') then
+                fldOnMsk_2D(vec_id,fld2D,loc_count) =
+     &                                        VICE(i,j,bi,bj)
+             ELSE IF (vec_flds2D(fld2D,vec_id) .eq. 'AREA') then
+                fldOnMsk_2D(vec_id,fld2D,loc_count) =
+     &                                        AREA(i,j,bi,bj)
+             ELSE IF (vec_flds2D(fld2D,vec_id) .eq. 'HEFF') then
+                fldOnMsk_2D(vec_id,fld2D,loc_count) =
+     &                                        HEFF(i,j,bi,bj)
+             ELSE IF (vec_flds2D(fld2D,vec_id) .eq. 'HSNOW') then
+                fldOnMsk_2D(vec_id,fld2D,loc_count) =
+     &                                        HSNOW(i,j,bi,bj)
+#endif
            ENDIF
 
           ENDDO
@@ -472,7 +491,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 C        Total number of 2D fields
         nFlds2D = vec_nFlds2D(vec_id)
         DO fld2D=1, nFlds2D
-          DO i=1, (sNx+sNy)*(nSx*nSy)
+          DO i=1, (VEC_points)*(nSx*nSy)
             fldOnMsk_2Davg(vec_id,fld2D,i) = 0.0
           ENDDO
         ENDDO
@@ -480,7 +499,7 @@ C        Total number of 2D fields
 c        Total number of 3D fields
         nFlds3D = vec_nFlds3D(vec_id)
         DO fld3D=1, nFlds3D
-          DO i=1, (sNx+sNy)*(nSx*nSy)
+          DO i=1, (VEC_points)*(nSx*nSy)
             DO k=1, vec_levels3D(fld3D, vec_id)
                fldOnMsk_3Davg(vec_id,fld3D,i,k) = 0.0
             ENDDO
@@ -573,7 +592,7 @@ C     !USES:
 C----&------------------------------------------------------------------xxxxxxx|
 
 
-        DO i=1, (sNx+sNy)*(nSx*nSy)
+        DO i=1, (VEC_points)*(nSx*nSy)
 
         DO fld2D=1, vec_nFlds2D(vec_id)
                 fldOnMsk_2Davg(vec_id,fld2D,i)
@@ -677,7 +696,7 @@ C----&------------------------------------------------------------------xxxxxxx|
         endif
 
 
-        DO i=1, (sNx+sNy)*(nSx*nSy)
+        DO i=1, (VEC_points)*(nSx*nSy)
 
         DO fld2D=1, vec_nFlds2D(vec_id)
             fldOnMsk_2Davg(vec_id,fld2D,i) =

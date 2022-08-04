@@ -77,10 +77,10 @@ C      MPI SEND/RECV calls in diagnostics_vec_init_fixed
      &                     SQUEEZE_RIGHT , 1)
       ENDIF
 
-C ---  The maximum size of the lateral masks is sNx+sNy per tile.
+C ---  The maximum size of the lateral masks is VEC_points
 C ---  A compile time options could be implemented to allow control over this feature.
       DO vec_id=1,nVEC_mask
-      IF (vec_numPnts_allproc(vec_id, mpiMyId+1).GT.(sNx+sNy)) THEN
+      IF (vec_numPnts_allproc(vec_id, mpiMyId+1).GT.VEC_points) THEN
             errCount = errCount +1
             WRITE(msgBuf,'(A,A,A,I5)')
      &      'diagnostics_vec mask ',vec_fnames(nVEC_mask),
@@ -89,8 +89,8 @@ C ---  A compile time options could be implemented to allow control over this fe
             CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT , 1)
             WRITE(msgBuf,'(A,I5,A,I5)')
-     &      '    max points per tile = sNx+sNy = ',
-     &      sNx+sNy,
+     &      '    max points per tile = ',
+     &      VEC_points,
      &      ' < ',vec_numPnts_allproc(vec_id, mpiMyId+1)
             CALL PRINT_ERROR( msgBuf, myThid )
             CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,

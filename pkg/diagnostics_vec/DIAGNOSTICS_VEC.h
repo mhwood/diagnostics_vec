@@ -62,11 +62,11 @@ C     This is where the input masks are stored after they are read in
       _RL sf_subMask(nSURF_mask,1-Olx:sNx+Olx,1-Oly:sNy+Oly,nSx,nSy)
 
 C     These store the rows/cols of valid mask locations within the masks
-      INTEGER vec_sub_local_ij(nVEC_mask, 4, (sNx+sNy)*(nSx*nSy))
-      INTEGER sf_sub_local_ij(nSURF_mask, 4, (sNx*sNy)*(nSx*nSy))
+      INTEGER vec_sub_local_ij(nVEC_mask, 4,(VEC_points)*(nSx*nSy))
+      INTEGER sf_sub_local_ij(nSURF_mask, 4,(sNx*sNy)*(nSx*nSy))
 
 C     These arrays map the above counters to ordered points in the mask
-      INTEGER vec_mask_ind_list(nVEC_mask,nPx*nPy,(sNx+sNy)*(nSx*nSy))
+      INTEGER vec_mask_ind_list(nVEC_mask,nPx*nPy,VEC_points*(nSx*nSy))
       INTEGER sf_mask_ind_list(nSURF_mask,nPx*nPy,(sNx*sNy)*(nSx*nSy))
 
 C     These store a list of mask points that each proc has
@@ -74,17 +74,17 @@ C     These store a list of mask points that each proc has
       INTEGER sf_numPnts_allproc(nSURF_mask, nPx*nPy)
 
 C     These arrays store data at each model time step
-      _RL fldOnMsk_2D(nVEC_mask,MAX_NFLDS,(sNx+sNy)*(nSx*nSy))
-      _RL fldOnMsk_3D(nVEC_mask,MAX_NFLDS,(sNx+sNy)*(nSx*nSy),Nr)
-      _RL fldOnMsk_2Davg(nVEC_mask,MAX_NFLDS,(sNx+sNy)*(nSx*nSy))
-      _RL fldOnMsk_3Davg(nVEC_mask,MAX_NFLDS,(sNx+sNy)*(nSx*nSy),Nr)
+      _RL fldOnMsk_2D(nVEC_mask,MAX_NFLDS,VEC_points*(nSx*nSy))
+      _RL fldOnMsk_3D(nVEC_mask,MAX_NFLDS,VEC_points*(nSx*nSy),Nr)
+      _RL fldOnMsk_2Davg(nVEC_mask,MAX_NFLDS,VEC_points*(nSx*nSy))
+      _RL fldOnMsk_3Davg(nVEC_mask,MAX_NFLDS,VEC_points*(nSx*nSy),Nr)
       _RL fldOnMsk_SF(nSURF_mask,MAX_NFLDS, (sNx*sNy)*(nSx*nSy))
       _RL fldOnMsk_SFavg(nSURF_mask,MAX_NFLDS, (sNx*sNy)*(nSx*nSy))
 
 C     This is a buffer where the main output on the mask is stored
 C     Used in diagnostics_vec_output
-      REAL*8 global_vec2D((sNy+sNx)*(nPx*nPy)*(nSx*nSy))
-      REAL*8 global_vec3D((sNy+sNx)*(nPx*nPy)*(nSx*nSy), Nr)
+      REAL*8 global_vec2D(VEC_points*(nPx*nPy)*(nSx*nSy))
+      REAL*8 global_vec3D(VEC_points*(nPx*nPy)*(nSx*nSy), Nr)
       REAL*8 global_SF((sNy*sNx)*(nPx*nPy)*(nSx*nSy))
 
 

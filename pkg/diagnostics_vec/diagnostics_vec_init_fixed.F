@@ -64,7 +64,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 
 C     This is in the initialization of the vector variables
 
-      DO i=1, (sNy+sNx)*(nPx*nPy)*(nSx*nSy)
+      DO i=1, (VEC_points)*(nPx*nPy)*(nSx*nSy)
         global_vec2D(i) = 0.0
         DO k=1, Nr
           global_vec3D(i,k) = 0.0
@@ -83,12 +83,12 @@ C     This is in the initialization of the vector variables
         ENDDO
 
         DO i=1,4
-          DO j=1, sNx+sNy
+          DO j=1, (VEC_points)*(nSx*nSy)
             vec_sub_local_ij(vec_id, i, j) = 0
           ENDDO
         ENDDO
 
-        DO i=1, (sNx+sNy)*(nSx*nSy)
+        DO i=1, (VEC_points)*(nSx*nSy)
           DO fld=1, MAX_NFLDS
             fldOnMsk_2D(vec_id, fld, i) = 0.0
             fldOnMsk_2Davg(vec_id, fld, i) = 0.0
@@ -113,7 +113,7 @@ C     This is in the initialization of the vector variables
 
         DO i=1, nPx*nPy
           vec_numPnts_allproc(vec_id, i) = 0
-          DO j=1, (sNx+sNy)*(nSx*nSy)
+          DO j=1, (VEC_points)*(nSx*nSy)
             vec_mask_ind_list(vec_id,i,j) = 0
           ENDDO
         ENDDO
@@ -122,7 +122,7 @@ C     This is in the initialization of the vector variables
 
 C     This is in the initialization of the surface variables
 
-      DO i=1, (sNy*sNx)*(nPx*nPy)*(nSx*nSy)
+      DO i=1, (sNx*sNy)*(nPx*nPy)*(nSx*nSy)
         global_SF(i) = 0.0
       ENDDO
 
@@ -553,7 +553,7 @@ C     !LOCAL VARIABLES:
       INTEGER vec_id, myThid
       INTEGER pid, i, status(MPI_STATUS_SIZE), ierror
       INTEGER sf_id
-      INTEGER g_vec_indices((sNx+sNy)*(nSx*nSy))
+      INTEGER g_vec_indices((VEC_points)*(nSx*nSy))
       INTEGER g_sf_indices((sNx*sNy)*(nSx*nSy))
       INTEGER num_pts
       CHARACTER*(MAX_LEN_MBUF) msgBuf
@@ -601,7 +601,8 @@ C      the count of the vec points
           endif
           DO vec_id=1, nVEC_mask
             call MPI_SEND(vec_mask_ind_list(vec_id,mpiMyId+1,:),
-     &  (sNx+sNy)*(nSx*nSy), MPI_INT,0, vec_id, MPI_COMM_MODEL, ierror)
+     &              (VEC_points)*(nSx*nSy), MPI_INT,0, vec_id, 
+     &              MPI_COMM_MODEL, ierror)
             call MPI_SEND(vec_numPnts_allproc(vec_id,mpiMyId+1),
      &             1, MPI_INT,0, vec_id*100, MPI_COMM_MODEL, ierror)
           ENDDO
@@ -618,13 +619,13 @@ C      and then the count of vec points from child process pid
           endif
           DO pid=1, nPx*nPy-1
             DO vec_id=1, nVEC_mask
-              call MPI_RECV(g_vec_indices,(sNx+sNy)*(nSx*nSy), MPI_INT,
-     &                   pid, vec_id ,MPI_COMM_MODEL, status, ierror)
+              call MPI_RECV(g_vec_indices,(VEC_points)*(nSx*nSy), 
+     &           MPI_INT, pid, vec_id ,MPI_COMM_MODEL, status, ierror)
 
               call MPI_RECV(num_pts, 1, MPI_INT,
      &               pid, vec_id*100 ,MPI_COMM_MODEL, status, ierror)
 
-              DO i=1, (sNx+sNy)*(nSx*nSy)
+              DO i=1, (VEC_points)*(nSx*nSy)
                vec_mask_ind_list(vec_id,pid+1,i) 
      &                   = g_vec_indices(i)
               ENDDO

@@ -37,8 +37,8 @@ C     !LOCAL VARIABLES:
       INTEGER vec_id, sf_id
       INTEGER tag
       INTEGER total_valid
-      REAL*8 buffer2D((sNx+sNy)*(nSx*nSy))
-      REAL*8 buffer3D((sNx+sNy)*(nSx*nSy), Nr)
+      REAL*8 buffer2D((VEC_points)*(nSx*nSy))
+      REAL*8 buffer3D((VEC_points)*(nSx*nSy), Nr)
       REAL*8 bufferSF((sNx*sNy)*(nSx*nSy))
       LOGICAL DIFFERENT_MULTIPLE
 
@@ -76,6 +76,12 @@ C  All MPI objects (e.g., MPI_Datatype, MPI_Comm) are of type INTEGER in Fortran
         WRITE(msgBuf,'(A,F20.3)') "     myTime: ", myTime
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
+        WRITE(msgBuf,'(A,F20.3)') "     startTime_vec: ", startTime_vec
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+        WRITE(msgBuf,'(A,F20.3)') "     endTime_vec: ", endTime_vec
+        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
         WRITE(msgBuf,'(A,I10)') "     myIter: ", myIter
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
@@ -99,7 +105,7 @@ C             (Convert _RL array to R8 before sending. Send R8 array)
 C----&------------------------------------------------------------------xxxxxxx|
 
 C       Initializing local arrays
-        DO i=1,(sNx+sNy)*(nSx*nSy)
+        DO i=1,(VEC_points)*(nSx*nSy)
           buffer2D(i) = 0.0
           DO k=1,Nr
             buffer3D(i,k) = 0.0
@@ -196,8 +202,8 @@ C           Convert _RL array to R8 array
             tag = vec_tags(vec_id, 1, fld2D)
 
 C           Send R8 array to master process
-            call MPI_SEND(buffer2D, (sNx+sNy)*(nSx*nSy), MPI_REAL8, 
-     &                    0, tag, MPI_COMM_MODEL, ierror)
+            call MPI_SEND(buffer2D, (VEC_points)*(nSx*nSy), 
+     &                  MPI_REAL8, 0, tag, MPI_COMM_MODEL, ierror)
 
            ENDDO
 
@@ -211,7 +217,7 @@ C           Convert _RL array to R8 array
 
 C           Send R8 array to master process
            call MPI_SEND(buffer3D, 
-     &      vec_levels3D(fld3D,vec_id)*(sNx+sNy)*(nSx*nSy),
+     &      vec_levels3D(fld3D,vec_id)*(VEC_points)*(nSx*nSy),
      &      MPI_REAL8, 0, tag, MPI_COMM_MODEL, ierror)
 
            ENDDO
@@ -432,8 +438,8 @@ C     myTime :: current time in model
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER fld, vec_id, nDim, myThid, myIter
       _RL myTime
-      REAL*8 buffer2D((sNx+sNy)*(nSx*nSy))
-      REAL*8 buffer3D((sNx*sNy)*(nSx*nSy), Nr)
+      REAL*8 buffer2D((VEC_points)*(nSx*nSy))
+      REAL*8 buffer3D((VEC_points)*(nSx*nSy), Nr)
       INTEGER total_valid, i, k, count
       INTEGER, PARAMETER :: debug = 0
 #ifndef ALLOW_USE_MPI
@@ -459,7 +465,7 @@ C     myTime :: current time in model
      &                     SQUEEZE_RIGHT, myThid )
         endif
 
-        DO i=1,(sNx+sNy)*(nSx*nSy)
+        DO i=1,(VEC_points)*(nSx*nSy)
          buffer2D(i) = 0.0
          DO k=1,Nr
            buffer3D(i,k) = 0.0
@@ -558,7 +564,7 @@ C       If number of valid elements is greater than or equal to 1
 
 C         MPI_RECV params: received_data, receive_count, receive_type, sender_ID, tag, comm, status, ierror
 C         Master process receiving time-averaged 2D field values on VEC points from process pid
-          call MPI_RECV(buffer2D, (sNx+sNy)*(nSx*nSy), MPI_REAL8,
+          call MPI_RECV(buffer2D, (VEC_points)*(nSx*nSy), MPI_REAL8,
      &                   pid, tag ,MPI_COMM_MODEL, status, ierror)
 
 C         Appending the received time-averaged 2D field values on VEC points from process pid
@@ -571,7 +577,7 @@ C         Appending the received time-averaged 2D field values on VEC points fro
 C         MPI_RECV params: received_data, receive_count, receive_type, sender_ID, tag, comm, status, ierror
 C         Master process receiving time-averaged 3D field values on VEC points from process pid
           call MPI_RECV(buffer3D(:,1:vec_levels3D(fld,vec_id)),
-     &           vec_levels3D(fld,vec_id)*(sNx+sNy)*(nSx*nSy), 
+     &           vec_levels3D(fld,vec_id)*(VEC_points)*(nSx*nSy), 
      &          MPI_REAL8, pid, tag ,MPI_COMM_MODEL, status, ierror)
 
 C         append_vec_values3D params: vec_id, pid, fld, vec_values
@@ -798,7 +804,7 @@ C       Appends field value corresponding to open boundary points to final globa
 #include "DIAGNOSTICS_VEC.h"
 
          INTEGER myThid
-         REAL*8 vec_values((sNx+sNy)*(nSx*nSy))
+         REAL*8 vec_values((VEC_points)*(nSx*nSy))
          INTEGER num_valid, i, vec_index, vec_id, pid
          INTEGER, PARAMETER :: debug = 0
          
@@ -842,7 +848,7 @@ C       Appends field value corresponding to open boundary points to final globa
 #include "DIAGNOSTICS_VEC.h"
 
         INTEGER myThid
-        REAL*8 vec_values((sNx+sNy)*(nSx*nSy), Nr)
+        REAL*8 vec_values((VEC_points)*(nSx*nSy), Nr)
         INTEGER num_valid, i, k, vec_index, vec_id, pid, fld
         INTEGER, PARAMETER :: debug = 0
         CHARACTER*(MAX_LEN_MBUF) msgBuf
@@ -949,20 +955,20 @@ C----&------------------------------------------------------------------xxxxxxx|
 #include "EEPARAMS.h"
 #include "DIAGNOSTICS_VEC.h"
 
-         REAL*8 buffer2D((sNx+sNy)*(nSx*nSy))
-         REAL*8 buffer3D((sNx+sNy)*(nSx*nSy), Nr)
+         REAL*8 buffer2D((VEC_points)*(nSx*nSy))
+         REAL*8 buffer3D((VEC_points)*(nSx*nSy), Nr)
          INTEGER vec_id, nDim, fld
          INTEGER i,k
          INTEGER, PARAMETER :: debug = 0
 C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
          IF (nDim .eq. 2) then
-           DO i=1, (sNx+sNy)*(nSx*nSy)
+           DO i=1, (VEC_points)*(nSx*nSy)
              buffer2D(i) = fldOnMsk_2Davg(vec_id,fld,i)
            ENDDO
 
          ELSE IF (nDim .eq. 3) then
-           DO i=1, (sNx+sNy)*(nSx*nSy)
+           DO i=1, (VEC_points)*(nSx*nSy)
              DO k=1,vec_levels3D(fld,vec_id)
                buffer3D(i,k) = fldOnMsk_3Davg(vec_id,fld,i,k)
              ENDDO

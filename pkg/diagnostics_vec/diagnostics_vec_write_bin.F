@@ -58,9 +58,9 @@ C----&------------------------------------------------------------------xxxxxxx|
 CBOC 
        character*2 dir
        character*50 filename
-       real*4 bufferR4_2D((sNy+sNx)*(nPx*nPy))
-       real*4 bufferR4_3D((sNy+sNx)*(nPx*nPy), Nr)
-       real*8 temp((sNy+sNx)*(nPx*nPy), Nr)
+       real*4 bufferR4_2D((VEC_points)*(nPx*nPy))
+       real*4 bufferR4_3D((VEC_points)*(nPx*nPy), Nr)
+       real*8 temp((VEC_points)*(nPx*nPy), Nr)
        integer, parameter :: debug = 0
        logical exists
        integer LEN, i
@@ -485,8 +485,8 @@ C----&------------------------------------------------------------------xxxxxxx|
 #include "DIAGNOSTICS_VEC.h"
 
 C     !INPUT PARAMETERS:
-        real*4 bufferR4_2D((sNy+sNx)*(nPx*nPy))
-        real*4 bufferR4_3D((sNy+sNx)*(nPx*nPy), Nr)
+        real*4 bufferR4_2D((VEC_points)*(nPx*nPy))
+        real*4 bufferR4_3D((VEC_points)*(nPx*nPy), Nr)
         integer nDim, fld, vec_id
 
 C     !LOCAL VARIABLES:
@@ -496,7 +496,7 @@ C----&------------------------------------------------------------------xxxxxxx|
 C----&------------------------------------------------------------------xxxxxxx|
 
 C        Initialize buffer arrays:
-       do i=1, ((sNy+sNx)*(nPx*nPy))
+       do i=1, ((VEC_points)*(nPx*nPy))
          bufferR4_2D(i) = 0.0
          do k=1, Nr
            bufferR4_3D(i,k) = 0.0
@@ -506,12 +506,12 @@ C        Initialize buffer arrays:
 C        Set real*8 values to real*4
 
         if (nDim .eq. 2) then
-          do i=1, ((sNy+sNx)*(nPx*nPy))
+          do i=1, ((VEC_points)*(nPx*nPy))
             bufferR4_2D(i) = global_vec2D(i)
           enddo
 
         else if (nDim .eq. 3) then
-          do i=1, ((sNy+sNx)*(nPx*nPy))
+          do i=1, ((VEC_points)*(nPx*nPy))
             do k=1, vec_levels3D(fld,vec_id)
               bufferR4_3D(i,k) = global_vec3D(i,k)
             enddo
