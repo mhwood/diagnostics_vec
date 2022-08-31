@@ -37,6 +37,10 @@ C     Assign unique tags to all 2D, 3D, and SF fields for MPI_SEND
 #include "PTRACERS_FIELDS.h"
 #endif
 
+#ifdef ALLOW_KPP
+#include "KPP.h"
+#endif
+
 #include "DIAGNOSTICS_VEC.h"
 
       CHARACTER*(MAX_LEN_MBUF) msgBuf
@@ -118,6 +122,16 @@ C       Add the variables from the sea ice package if its acivated
                 fldOnMsk_2D(vec_id,fld2D,loc_count) =
      &                                        HSNOW(i,j,bi,bj)
 #endif
+
+#ifdef ALLOW_KPP
+             ELSE IF (vec_flds2D(fld2D,vec_id) .eq. 'KPPHBL') then
+                fldOnMsk_2D(vec_id,fld2D,loc_count) =
+     &                                        KPPhbl(i,j,bi,bj)
+             ELSE IF (vec_flds2D(fld2D,vec_id) .eq. 'KPPFRAC') then
+                fldOnMsk_2D(vec_id,fld2D,loc_count) =
+     &                                        KPPfrac(i,j,bi,bj)
+#endif
+
            ENDIF
 
           ENDDO
@@ -238,6 +252,22 @@ C This part is for variables from the ptracer pkg (assuming only up to 20 tracer
              fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
      &                                        PTRACER(i,j,k,bi,bj,20)
 #endif
+
+#ifdef ALLOW_KPP
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'KPPDIFFS') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        KPPdiffKzS(i,j,k,bi,bj)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'KPPDIFFT') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        KPPdiffKzT(i,j,k,bi,bj)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'KPPVISCA') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        KPPviscAz(i,j,k,bi,bj)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'KPPGHAT') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        KPPghat(i,j,k,bi,bj)
+#endif
+
             ENDIF
            ENDDO
         ENDDO
@@ -436,6 +466,15 @@ C Fifth part is for variables from the sea ice package
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'HSNOW') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
      &                                        HSNOW(i,j,bi,bj)
+#endif
+
+#ifdef ALLOW_KPP
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'KPPHBL') then
+                fldOnMsk_SF(sf_id,fldSF,loc_count) =
+     &                                        KPPhbl(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'KPPFRAC') then
+                fldOnMsk_SF(sf_id,fldSF,loc_count) =
+     &                                        KPPfrac(i,j,bi,bj)
 #endif
 
            ENDIF
