@@ -41,6 +41,10 @@ C     Assign unique tags to all 2D, 3D, and SF fields for MPI_SEND
 #include "KPP.h"
 #endif
 
+#ifdef ALLOW_DARWIN
+#include "DARWIN_FIELDS.h"
+#endif
+
 #include "DIAGNOSTICS_VEC.h"
 
       CHARACTER*(MAX_LEN_MBUF) msgBuf
@@ -188,7 +192,7 @@ C          Comparing strings provided by user to fields in diagnostics_vec
               fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
      &                                        hFacS(i,j,k,bi,bj)
             
-C This part is for variables from the ptracer pkg (assuming only up to 20 tracers)
+C This part is for variables from the ptracer pkg (assuming only up to 31 tracers)
 #ifdef ALLOW_PTRACERS
 
              ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE01') then
@@ -251,6 +255,39 @@ C This part is for variables from the ptracer pkg (assuming only up to 20 tracer
              ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE20') then
              fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
      &                                        PTRACER(i,j,k,bi,bj,20)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE21') then
+             fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,21)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE22') then
+             fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,22)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE23') then
+             fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,23)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE24') then
+             fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,24)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE25') then
+             fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,25)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE26') then
+             fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,26)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE27') then
+             fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,27)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE28') then
+             fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,28)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE29') then
+             fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,29)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE30') then
+             fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,30)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PTRACE31') then
+             fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        PTRACER(i,j,k,bi,bj,31)
 #endif
 
 #ifdef ALLOW_KPP
@@ -266,6 +303,15 @@ C This part is for variables from the ptracer pkg (assuming only up to 20 tracer
              ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'KPPGHAT') then
                 fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
      &                                        KPPghat(i,j,k,bi,bj)
+#endif
+
+#ifdef ALLOW_DARWIN
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PH') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        pH(i,j,k,bi,bj)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PCO2') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        pCO2(i,j,k,bi,bj)
 #endif
 
             ENDIF
@@ -468,6 +514,7 @@ C Fifth part is for variables from the sea ice package
      &                                        HSNOW(i,j,bi,bj)
 #endif
 
+C Sixth part is for variables from the KPP package
 #ifdef ALLOW_KPP
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'KPPHBL') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
@@ -475,6 +522,12 @@ C Fifth part is for variables from the sea ice package
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'KPPFRAC') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
      &                                        KPPfrac(i,j,bi,bj)
+#endif
+
+#ifdef ALLOW_DARWIN
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PCO2') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                        pCO2(i,j,1,bi,bj)
 #endif
 
            ENDIF
