@@ -228,16 +228,30 @@ def update_boot_sequence_files(mitgcm_path):
     inc_dir = os.path.join(mitgcm_path,'model','inc')
     src_dir = os.path.join(mitgcm_path, 'model', 'src')
 
+    print('      - Adding diagnostics_vec to PARAMS.h')
     pkg_already_added = update_PARAMS(inc_dir)
     if not pkg_already_added:
+        print('      - Adding a block to the package boot sequence')
         update_packages_boot(src_dir)
+
+        print('      - Adding a block to the package check sequence')
         update_packages_check(src_dir)
+
+        print('      - Adding a block to the package init_fixed sequence')
         update_packages_init_fixed(src_dir)
+
+        print('      - Adding a block to the package init_variables sequence')
         update_packages_init_variables(src_dir)
+
+        print('      - Adding a block to the package readparms sequence')
         update_packages_readparms(src_dir)
+
+        print('      - Adding a block to the model i/o sequence')
         update_do_the_model_io(src_dir)
     else:
-        print('    Diagnostics_vec has already been added to the boot sequence!')
+        print(' - Diagnostics_vec was already implemented! Sequence aborted')
+
+    return(pkg_already_added)
 
 ######################################################################
 # This function is to add the new package files to the pkg dir
@@ -272,13 +286,16 @@ def copy_files_to_fresh_clone(mitgcm_path):
     if pwd_short!='utils':
         raise ValueError('Run this code from within the utils dir')
 
-    print('Updating the boot sequence files in model/* directory')
+    print(' - Updating the boot sequence files in model/* directory')
     # step 1: edit the old boot sequence files to add the new package
-    update_boot_sequence_files(mitgcm_path)
+    pkg_already_added = update_boot_sequence_files(mitgcm_path)
 
-    print('Updating diagnostics_vec files in the pkg directory')
-    # step 2: add the new diagnostics_vec_package
-    add_diagnostics_vec_package_files(mitgcm_path)
+    if not pkg_already_added:
+        print(' - Copying diagnostics_vec files into the pkg directory')
+        # step 2: add the new diagnostics_vec_package
+        add_diagnostics_vec_package_files(mitgcm_path)
+
+        print(' - Copy successful!')
 
 
 if __name__ == '__main__':
