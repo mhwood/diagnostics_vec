@@ -116,8 +116,10 @@ C       Initializing local arrays
           bufferSF(i) = 0.0
         ENDDO
 
+        CALL TIMER_START('SET_SUBFIELDS  [DV_OUTPUT]',myThid)
 C       Extracting field values on open boundary points at each time step
         CALL SET_SUBFIELDS(myThid, myIter)
+        CALL TIMER_STOP('SET_SUBFIELDS  [DV_OUTPUT]',myThid)
 
 C       Now looping through each boundary mask and communicating fields between master process and child processes
 C       Each child sends their piece of the mask to the parent here

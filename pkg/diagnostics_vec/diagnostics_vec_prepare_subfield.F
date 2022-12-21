@@ -45,6 +45,10 @@ C     Assign unique tags to all 2D, 3D, and SF fields for MPI_SEND
 #include "DARWIN_FIELDS.h"
 #endif
 
+#ifdef ALLOW_ICEPLUME
+#include "ICEPLUME_DV_FIELDS.h"
+#endif
+
 #include "DIAGNOSTICS_VEC.h"
 
       CHARACTER*(MAX_LEN_MBUF) msgBuf
@@ -290,6 +294,7 @@ C This part is for variables from the ptracer pkg (assuming only up to 31 tracer
      &                                        PTRACER(i,j,k,bi,bj,31)
 #endif
 
+C Then kpp
 #ifdef ALLOW_KPP
              ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'KPPDIFFS') then
                 fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
@@ -312,6 +317,27 @@ C This part is for variables from the ptracer pkg (assuming only up to 31 tracer
              ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PCO2') then
                 fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
      &                                        pCO2(i,j,k,bi,bj)
+#endif
+
+#ifdef ALLOW_ICEPLUME
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'ICEFRNTA') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                       icefrntA_dv(i,j,k,bi,bj)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'ICEFRNTM') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                       icefrntM_dv(i,j,k,bi,bj)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'ICEFRNTR') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                       icefrntR_dv(i,j,k,bi,bj)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'ICEFRNTS') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                       icefrntS_dv(i,j,k,bi,bj)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'ICEFRNTT') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                       icefrntT_dv(i,j,k,bi,bj)
+             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'ICEFRNTW') then
+                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
+     &                                       icefrntW_dv(i,j,k,bi,bj)
 #endif
 
             ENDIF
@@ -431,9 +457,6 @@ C          Variables from the EXF package:
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SFLUX') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
      &                                        sflux(i,j,bi,bj)
-             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SWFLUX') then
-                fldOnMsk_SF(sf_id,fldSF,loc_count) =
-     &                                        swflux(i,j,bi,bj)
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'UWIND') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
      &                                        uwind(i,j,bi,bj)
@@ -524,10 +547,14 @@ C Sixth part is for variables from the KPP package
      &                                        KPPfrac(i,j,bi,bj)
 #endif
 
+C Seventh part is for variables for the Darwin package
 #ifdef ALLOW_DARWIN
-             ELSE IF (vec_flds3D(fld3D,vec_id) .eq. 'PCO2') then
-                fldOnMsk_3D(vec_id,fld3D,loc_count,k) =
-     &                                        pCO2(i,j,1,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'ATMOSCO2') then
+                fldOnMsk_SF(sf_id,fldSF,loc_count) =
+     &                                        atmospCO2(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'IRONDUST') then
+                fldOnMsk_SF(sf_id,fldSF,loc_count) =
+     &                                     inputFe(i,j,bi,bj)
 #endif
 
            ENDIF
