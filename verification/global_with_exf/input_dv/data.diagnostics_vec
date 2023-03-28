@@ -2,9 +2,12 @@
 # Diagnostics_vec Package Choices
 #--------------------------------------------------------------------------------
 #     Averaging Period:
-#     nml_avgPeriod : averaging period duration (negative => snapshot)
 #     nml_startTime : start time of output
 #     nml_endTime : end time of output
+#     nml_vec_avg_periods :: averaging period (frequency) of output   
+#                                for each vector mask
+#     nml_sf_avg_periods :: averaging period (frequency) of output   
+#                                for each surface mask
 #     nml_debugLevel : determine how much output is printed from each function 
 #                      (increases in output from 0 to 3)
 #
@@ -36,7 +39,6 @@
  &DIAG_VEC_INPUT_VARS
 
 # averaging times
- nml_avgPeriod = 1200.,
  nml_startTime = 0,
  nml_endTime = 1576800000.,
 
