@@ -49,6 +49,10 @@ C     Assign unique tags to all 2D, 3D, and SF fields for MPI_SEND
 #include "ICEPLUME_DV_FIELDS.h"
 #endif
 
+#ifdef ALLOW_SHELFICE
+#include "SHELFICE.h"
+#endif
+
 #include "DIAGNOSTICS_VEC.h"
 
       CHARACTER*(MAX_LEN_MBUF) msgBuf
@@ -555,6 +559,16 @@ C Seventh part is for variables for the Darwin package
              ELSE IF (sf_flds(fldSF,sf_id) .eq. 'IRONDUST') then
                 fldOnMsk_SF(sf_id,fldSF,loc_count) =
      &                                     inputFe(i,j,bi,bj)
+#endif
+
+C Seventh part is for variables for the shelfice package
+#ifdef ALLOW_SHELFICE
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SHFHTFLX') then
+                fldOnMsk_SF(sf_id,fldSF,loc_count) =
+     &                                 shelficeHeatFlux(i,j,bi,bj)
+             ELSE IF (sf_flds(fldSF,sf_id) .eq. 'SHFFWFLX') then
+                fldOnMsk_SF(sf_id,fldSF,loc_count) =
+     &                           shelficeFreshWaterFlux(i,j,bi,bj)
 #endif
 
            ENDIF
