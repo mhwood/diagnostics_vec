@@ -43,6 +43,7 @@ C     Assign unique tags to all 2D, 3D, and SF fields for MPI_SEND
 
 #ifdef ALLOW_DARWIN
 #include "DARWIN_FIELDS.h"
+#include "DARWIN_EXF_FIELDS.h"
 #endif
 
 #ifdef ALLOW_ICEPLUME
