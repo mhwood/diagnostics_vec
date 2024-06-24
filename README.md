@@ -2,6 +2,9 @@
 
 Authors: Michael Wood, Ian Fenty, April Shin
 
+## Citation
+If you use this package in your work, the authors kindly request that you cite Wood et al 2024 (DOI: [10.1029/2023GL107983](https://doi.org/10.1029/2023GL107983))
+
 ## Package Purpose and Motivation
 The MITgcm model has one method for outputting model "diagnostics" for a particular experiment: dump the entire field. While entire model fields are desired for many experiements, this is not always the case. Here, we design a model package which is capable of outputting model diagnostics in a subset of the model domain e.g. along a vector (or "vec"). 
 
