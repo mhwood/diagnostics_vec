@@ -203,13 +203,13 @@ def update_do_the_model_io(src_dir):
     lines = lines.split('\n')
 
     # add the note to the chain
-    indicator = 'C       |-- LAYERS_OUTPUT'
+    indicator = 'C       |-- LAYERS_CALC'
     skip_line = 0
     add_lines = ['C       |','C       |-- DIAGNOSTICS_VEC_OUTPUT']
     lines = add_new_lines(lines, indicator, skip_line, add_lines)
 
     # add the check code
-    indicator = '        CALL LAYERS_OUTPUT( myTime, myIter, myThid )'
+    indicator = '        CALL LAYERS_CALC( myTime, myIter, myThid )'
     skip_line = 2
     add_lines = ['',
                  '#ifdef ALLOW_DIAGNOSTICS_VEC',
