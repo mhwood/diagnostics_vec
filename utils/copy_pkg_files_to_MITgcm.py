@@ -210,7 +210,7 @@ def update_do_the_model_io(src_dir):
 
     # add the check code
     indicator = '        CALL LAYERS_CALC( myTime, myIter, myThid )'
-    skip_line = 2
+    skip_line = 3
     add_lines = ['',
                  '#ifdef ALLOW_DIAGNOSTICS_VEC',
                  '      IF ( useDiagnostics_vec )',
