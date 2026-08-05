@@ -48,9 +48,12 @@ C     | - i,j        :: Indices used in variable definition loops        |
 C     | - undefRL  :: Undefined number to check if parameters were given |
 C     |                                                                  |
 C     | Defined by user in data.diagnostics_vec:                         |
-C     | - nml_avgPeriod :: averaging period (frequency) of output        |
 C     | - nml_startTime :: start time for output                         |
 C     | - nml_endTime :: end time for output                             |
+C     | - nml_vec_avg_periods :: averaging period (frequency) of output  |
+C     |                          for each vector mask                    |
+C     | - nml_sf_avg_periods :: averaging period (frequency) of output   |
+C     |                          for each surface mask                   |
 C     | - nml_vecFiles :: filenames for the boundary masks               |
 C     | - nml_sfFiles :: filenames for the surface masks                 |
 C     | - nml_fields2D :: 2D field names for ocean state and             |
